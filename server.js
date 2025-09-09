@@ -250,15 +250,13 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
 // Servir archivos estáticos de uploads
 app.use('/uploads', express.static('uploads'));
 
-// Iniciar servidor
 app.listen(PORT, async () => {
-    console.log(`Servidor iniciando en http://localhost:${PORT}`);
+    console.log(`Servidor corriendo en puerto ${PORT}`);
     await connectDB();
-    console.log(`Servidor listo en http://localhost:${PORT}`);
 });
 
-// Manejo de errores de conexión
 process.on('SIGINT', async () => {
+    console.log('Cerrando conexión a la base de datos...');
     if (pool) {
         await pool.close();
     }
@@ -469,151 +467,6 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
         res.status(500).json({ 
             success: false,
             message: `Error del servidor: ${err.message}. Código: ${err.code || 'N/A'}`
-        });
-    }
-});
-// Reemplaza el endpoint completo con esta versión que maneja mejor los errores
-app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) => {
-    console.log('=== RECIBIENDO FORMULARIO ===');
-    console.log('Datos:', req.body);
-    
-    try {
-        // Verificar conexión
-        if (!pool || !isConnected) {
-            console.log('❌ Sin conexión a BD');
-            return res.status(500).json({ 
-                success: false, 
-                message: 'Sin conexión a la base de datos' 
-            });
-        }
-        
-        // Extraer datos básicos
-        const {
-            situation_relation, area, type, subject, message,
-            name, email, phone, company, position, anonymous, puntos_venta
-        } = req.body;
-        
-        // Validar campos obligatorios
-        if (!situation_relation) {
-            return res.status(400).json({
-                success: false,
-                message: 'Falta: ¿Qué relación tiene con la situación expuesta?'
-            });
-        }
-        
-        if (!area) {
-            return res.status(400).json({
-                success: false,
-                message: 'Falta: Área'
-            });
-        }
-        
-        if (!type) {
-            return res.status(400).json({
-                success: false,
-                message: 'Falta: Tipo de Reporte'
-            });
-        }
-        
-        if (!subject) {
-            return res.status(400).json({
-                success: false,
-                message: 'Falta: Asunto'
-            });
-        }
-        
-        if (!message) {
-            return res.status(400).json({
-                success: false,
-                message: 'Falta: Mensaje'
-            });
-        }
-        
-        console.log('✅ Validaciones OK');
-        
-        // Procesar archivos
-        let attachmentUrls = [];
-        if (req.files && req.files.length > 0) {
-            attachmentUrls = req.files.map(file => `/uploads/${file.filename}`);
-        }
-        
-        // Generar ID único
-        const reportId = uuidv4();
-        
-        console.log('=== INSERTANDO EN BD ===');
-        
-        // Inserción simplificada
-        const request = pool.request();
-        
-        const result = await request
-            .input('id', sql.UniqueIdentifier, reportId)
-            .input('name', sql.NVarChar, (anonymous === 'true') ? null : (name || null))
-            .input('email', sql.NVarChar, (anonymous === 'true') ? null : (email || null))
-            .input('phone', sql.NVarChar, (anonymous === 'true') ? null : (phone || null))
-            .input('company', sql.NVarChar, company || null)
-            .input('position', sql.NVarChar, position || null)
-            .input('situation_relation', sql.NVarChar, situation_relation)
-            .input('area', sql.NVarChar, area)
-            .input('type', sql.NVarChar, type)
-            .input('subject', sql.NVarChar, subject)
-            .input('message', sql.NVarChar, message)
-            .input('anonymous', sql.Bit, anonymous === 'true')
-            .input('attachment_urls', sql.NVarChar, JSON.stringify(attachmentUrls))
-            .input('puntos_venta', sql.NVarChar, puntos_venta || null)
-            .query(`
-                INSERT INTO feedback 
-                (id, name, email, phone, company, position, situation_relation, area, type, subject, message, anonymous, attachment_urls, puntos_venta)
-                VALUES 
-                (@id, @name, @email, @phone, @company, @position, @situation_relation, @area, @type, @subject, @message, @anonymous, @attachment_urls, @puntos_venta)
-            `);
-        
-        console.log('✅ Guardado exitoso:', reportId);
-        
-        res.json({ 
-            success: true, 
-            message: 'Reporte enviado exitosamente',
-            reportId: reportId
-        });
-        
-    } catch (err) {
-        console.error('❌ ERROR DETALLADO:');
-        console.error('Mensaje:', err.message);
-        console.error('Código:', err.code);
-        console.error('Número:', err.number);
-        console.error('Stack:', err.stack);
-        
-        // Errores específicos
-        if (err.number === 2) {
-            return res.status(500).json({
-                success: false,
-                message: 'No se puede conectar al servidor SQL Server'
-            });
-        }
-        
-        if (err.number === 18456) {
-            return res.status(500).json({
-                success: false,
-                message: 'Error de autenticación en SQL Server'
-            });
-        }
-        
-        if (err.number === 208) {
-            return res.status(500).json({
-                success: false,
-                message: 'La tabla feedback no existe en la base de datos'
-            });
-        }
-        
-        if (err.number === 515) {
-            return res.status(400).json({
-                success: false,
-                message: 'Campo requerido faltante en la base de datos'
-            });
-        }
-        
-        res.status(500).json({ 
-            success: false,
-            message: `Error específico: ${err.message}`
         });
     }
 });
