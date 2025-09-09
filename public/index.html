@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Línea Ética</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Línea Ética</h1>
+            <p>Canal seguro para denuncias de conductas no éticas y consultas empresariales internas. Todas las comunicaciones son tratadas con estricta confidencialidad.</p>
+        </header>
+
+        <div class="form-container">
+            <div class="anonymous-toggle">
+                <label class="switch">
+                    <input type="checkbox" id="anonymousToggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="toggle-label">Envío Anónimo</span>
+                <p class="toggle-description">Enviar este formulario de forma anónima</p>
+            </div>
+
+            <form id="ethicsForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="position">¿Cuál es su relación con la empresa? *</label>
+                    <select id="position" name="position" required>
+                        <option value="">Seleccione una opción</option>
+                        <option value="empleado">Empleado</option>
+                        <option value="contratista">Contratista</option>
+                        <option value="proveedor">Proveedor</option>
+                        <option value="cliente">Cliente</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="situation_relation">¿Qué relación tiene con la situación expuesta? *</label>
+                    <select id="situation_relation" name="situation_relation" required>
+                        <option value="">Seleccione una opción</option>
+                        <option value="me_paso_a_mi">Me pasó a mi</option>
+                        <option value="me_encuentro_involucrado">Me encuentro involucrado(a)</option>
+                        <option value="lo_observe">Lo observé</option>
+                        <option value="lo_escuche_por_casualidad">Lo escuché por casualidad</option>
+                        <option value="alguien_me_lo_dijo">Alguien me lo dijo</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+
+                <div class="personal-info" id="personalInfo">
+                    <div class="form-group">
+                        <label for="name">Nombre Completo *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Correo Electrónico *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Teléfono (Opcional)</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="company">Empresa</label>
+                    <input type="text" id="company" name="company">
+                </div>
+
+                <div class="form-group">
+                    <label for="area">Área *</label>
+                    <select id="area" name="area" required>
+                        <option value="">Seleccione un área</option>
+                        <option value="administrativa">Administrativa</option>
+                        <option value="Comercial: Venta y Posventa">Comercial: Venta y Posventa</option>
+                        <option value="contabilidad">Contabilidad</option>
+                        <option value="direccion">Dirección</option>
+                        <option value="recursos_humanos">Recursos Humanos</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="puntos_venta">Punto de Venta:</label>
+                    <select id="puntos_venta" name="puntos_venta" disabled>
+                        <option value="">Seleccione un punto de venta</option>
+                        <!-- Centromotos -->
+                        <option value="Calle 170" data-empresa="Centromotos">Calle 170</option>
+                        <option value="Calle 80" data-empresa="Centromotos">Calle 80</option>
+                        <option value="Chapinero" data-empresa="Centromotos">Chapinero</option>
+                        <option value="Suba" data-empresa="Centromotos">Suba</option>
+                        <option value="Usaquén" data-empresa="Centromotos">Usaquén</option>
+                        <!-- Distrimotos -->
+                        <option value="Aguachica" data-empresa="Distrimotos">Aguachica</option>
+                        <option value="Agustín Codazzi" data-empresa="Distrimotos">Agustín Codazzi</option>
+                        <option value="Bosconia" data-empresa="Distrimotos">Bosconia</option>
+                        <option value="Chiquinquira" data-empresa="Distrimotos">Chiquinquira</option>
+                        <option value="Duitama" data-empresa="Distrimotos">Duitama</option>
+                        <option value="El Copey" data-empresa="Distrimotos">El Copey</option>
+                        <option value="Fonseca" data-empresa="Distrimotos">Fonseca</option>
+                        <option value="La Jagua" data-empresa="Distrimotos">La Jagua</option>
+                        <option value="La Loma" data-empresa="Distrimotos">La Loma</option>
+                        <option value="Maicao" data-empresa="Distrimotos">Maicao</option>
+                        <option value="Rioacha" data-empresa="Distrimotos">Rioacha</option>
+                        <option value="Santa Marta. Mobility" data-empresa="Distrimotos">Santa Marta. Mobility</option>
+                        <option value="Santa Marta. Tvs" data-empresa="Distrimotos">Santa Marta. Tvs</option>
+                        <option value="Sogamoso" data-empresa="Distrimotos">Sogamoso</option>
+                        <option value="Tunja" data-empresa="Distrimotos">Tunja</option>
+                        <option value="Ubate" data-empresa="Distrimotos">Ubate</option>
+                        <option value="Valledupar" data-empresa="Distrimotos">Valledupar</option>
+                        <!-- Credimotos -->
+                        <option value="Acacias" data-empresa="Credimotos">Acacias</option>
+                        <option value="Apartadó 1" data-empresa="Credimotos">Apartadó 1</option>
+                        <option value="Apartadó 2" data-empresa="Credimotos">Apartadó 2</option>
+                        <option value="Avenida Colombia" data-empresa="Credimotos">Avenida Colombia</option>
+                        <option value="Bogotá Restrepo" data-empresa="Credimotos">Bogotá Restrepo</option>
+                        <option value="Carepa" data-empresa="Credimotos">Carepa</option>
+                        <option value="Chigorodó" data-empresa="Credimotos">Chigorodó</option>
+                        <option value="Duitama" data-empresa="Credimotos">Duitama</option>
+                        <option value="Facatativa" data-empresa="Credimotos">Facatativa</option>
+                        <option value="Fusagasuga" data-empresa="Credimotos">Fusagasuga</option>
+                        <option value="Granada" data-empresa="Credimotos">Granada</option>
+                        <option value="Honda Dream" data-empresa="Credimotos">Honda Dream</option>
+                        <option value="Itagui" data-empresa="Credimotos">Itagui</option>
+                        <option value="Melgar" data-empresa="Credimotos">Melgar</option>
+                        <option value="Necocli" data-empresa="Credimotos">Necocli</option>
+                        <option value="Puerto Gaitan" data-empresa="Credimotos">Puerto Gaitan</option>
+                        <option value="San Jose Del Guaviare" data-empresa="Credimotos">San Jose Del Guaviare</option>
+                        <option value="Santa Fe De Antioquia" data-empresa="Credimotos">Santa Fe De Antioquia</option>
+                        <option value="Soacha" data-empresa="Credimotos">Soacha</option>
+                        <option value="Sogamoso" data-empresa="Credimotos">Sogamoso</option>
+                        <option value="Tunja 1" data-empresa="Credimotos">Tunja 1</option>
+                        <option value="Tunja 2" data-empresa="Credimotos">Tunja 2</option>
+                        <option value="Villanueva" data-empresa="Credimotos">Villanueva</option>
+                        <option value="Villavicencio 1" data-empresa="Credimotos">Villavicencio 1</option>
+                        <option value="Villavicencio 2" data-empresa="Credimotos">Villavicencio 2</option>
+                        <option value="Villavicencio 3" data-empresa="Credimotos">Villavicencio 3</option>
+                        <option value="Yopal" data-empresa="Credimotos">Yopal</option>
+                        <!-- Credimovil -->
+                        <option value="Acacias" data-empresa="Credimovil">Acacias</option>
+                        <option value="Barbosa" data-empresa="Credimovil">Barbosa</option>
+                        <option value="Barranca 1" data-empresa="Credimovil">Barranca 1</option>
+                        <option value="Barranca 2" data-empresa="Credimovil">Barranca 2</option>
+                        <option value="Bogotá Calle 167" data-empresa="Credimovil">Bogotá Calle 167</option>
+                        <option value="Bogotá Suba" data-empresa="Credimovil">Bogotá Suba</option>
+                        <option value="Bucaramanga" data-empresa="Credimovil">Bucaramanga</option>
+                        <option value="Duitama" data-empresa="Credimovil">Duitama</option>
+                        <option value="Facatativa" data-empresa="Credimovil">Facatativa</option>
+                        <option value="Funza" data-empresa="Credimovil">Funza</option>
+                        <option value="Granada" data-empresa="Credimovil">Granada</option>
+                        <option value="San Jose Del Guaviare" data-empresa="Credimovil">San Jose Del Guaviare</option>
+                        <option value="Sogamoso" data-empresa="Credimovil">Sogamoso</option>
+                        <option value="Tunja" data-empresa="Credimovil">Tunja</option>
+                        <option value="Villanueva" data-empresa="Credimovil">Villanueva</option>
+                        <option value="Villavicencio Av40" data-empresa="Credimovil">Villavicencio Av40</option>
+                        <option value="Yopal" data-empresa="Credimovil">Yopal</option>
+                        <!-- Motomovil -->
+                        <option value="Acacias" data-empresa="Motomovil">Acacias</option>
+                        <option value="Melgar" data-empresa="Motomovil">Melgar</option>
+                        <option value="Puerto Gaitan" data-empresa="Motomovil">Puerto Gaitan</option>
+                        <option value="Bogotá Restrepo" data-empresa="Motomovil">Bogotá Restrepo</option>
+                        <option value="San Jose Del Guaviare" data-empresa="Motomovil">San Jose Del Guaviare</option>
+                        <option value="Villavicencio" data-empresa="Motomovil">Villavicencio</option>
+                        <option value="Yopal" data-empresa="Motomovil">Yopal</option>
+                        <!-- Sabanamotos -->
+                        <option value="Fontibón" data-empresa="Sabanamotos">Fontibón</option>
+                        <option value="Fusagasuga" data-empresa="Sabanamotos">Fusagasuga</option>
+                        <option value="Granada" data-empresa="Sabanamotos">Granada</option>
+                        <option value="Melgar" data-empresa="Sabanamotos">Melgar</option>
+                        <option value="San Jose Del Guaviare" data-empresa="Sabanamotos">San Jose Del Guaviare</option>
+                        <option value="Villavicencio" data-empresa="Sabanamotos">Villavicencio</option>
+                        <!-- Motocredito -->
+                        <option value="Apartadó" data-empresa="Motocredito">Apartadó</option>
+                        <option value="Bello" data-empresa="Motocredito">Bello</option>
+                        <option value="Chigorodó" data-empresa="Motocredito">Chigorodó</option>
+                        <option value="Copacabana" data-empresa="Motocredito">Copacabana</option>
+                        <!-- Motos Del Aburra -->
+                        <option value="Andes" data-empresa="Motos Del Aburra">Andes</option>
+                        <option value="Aranjuez" data-empresa="Motos Del Aburra">Aranjuez</option>
+                        <option value="Bello" data-empresa="Motos Del Aburra">Bello</option>
+                        <option value="Caldas" data-empresa="Motos Del Aburra">Caldas</option>
+                        <option value="Caucasia" data-empresa="Motos Del Aburra">Caucasia</option>
+                        <option value="Ciudad Bolivar" data-empresa="Motos Del Aburra">Ciudad Bolivar</option>
+                        <!-- Fintotal -->
+                        <option value="Itagüi" data-empresa="Fintotal">Itagüi</option>
+                        <option value="Robledo" data-empresa="Fintotal">Robledo</option>
+                        <!-- Motoracing -->
+                        <option value="Acacias" data-empresa="Motoracing">Acacias</option>
+                        <option value="Cumaral" data-empresa="Motoracing">Cumaral</option>
+                        <option value="Duitama" data-empresa="Motoracing">Duitama</option>
+                        <option value="Granada" data-empresa="Motoracing">Granada</option>
+                        <option value="Medellin" data-empresa="Motoracing">Medellin</option>
+                        <option value="Bogotá Paloquemao" data-empresa="Motoracing">Bogotá Paloquemao</option>
+                        <option value="San Jose Del Guaviare" data-empresa="Motoracing">San Jose Del Guaviare</option>
+                        <option value="Sogamoso" data-empresa="Motoracing">Sogamoso</option>
+                        <option value="Villavicencio" data-empresa="Motoracing">Villavicencio</option>
+                        <!-- Motos Del Darien -->
+                        <option value="Apartadó 1" data-empresa="Motos Del Darien">Apartadó 1</option>
+                        <option value="Apartadó 2" data-empresa="Motos Del Darien">Apartadó 2</option>
+                        <option value="Aranjuez" data-empresa="Motos Del Darien">Aranjuez</option>
+                        <option value="Bajira" data-empresa="Motos Del Darien">Bajira</option>
+                        <option value="Cañasgordas" data-empresa="Motos Del Darien">Cañasgordas</option>
+                        <option value="Carepa" data-empresa="Motos Del Darien">Carepa</option>
+                        <option value="Caucasia" data-empresa="Motos Del Darien">Caucasia</option>
+                        <option value="Chigorodo" data-empresa="Motos Del Darien">Chigorodo</option>
+                        <option value="Frontino" data-empresa="Motos Del Darien">Frontino</option>
+                        <option value="Girardota" data-empresa="Motos Del Darien">Girardota</option>
+                        <option value="Istmina" data-empresa="Motos Del Darien">Istmina</option>
+                        <option value="Mutata" data-empresa="Motos Del Darien">Mutata</option>
+                        <option value="Necocli" data-empresa="Motos Del Darien">Necocli</option>
+                        <option value="Quibdó" data-empresa="Motos Del Darien">Quibdó</option>
+                        <option value="San Juan De Uraba" data-empresa="Motos Del Darien">San Juan De Uraba</option>
+                        <option value="Santa Fé De Antioquia" data-empresa="Motos Del Darien">Santa Fé De Antioquia</option>
+                        <option value="Turbo" data-empresa="Motos Del Darien">Turbo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="type">Tipo de Reporte *</label>
+                    <select id="type" name="type" required>
+                        <option value="">Seleccione el tipo</option>
+                        <option value="acoso">Conflicto de interés</option>
+                        <option value="discriminacion">Fraude, hurto o apropiación indebida</option>
+                        <option value="fraude">Discriminación o acoso</option>
+                        <option value="corrupcion">Irregularidades de terceros relacionados</option>
+                        <option value="conflicto_interes">Otras conductas no éticas</option>
+                     
+                    </select>
+                </div>
+
+              
+
+                <div class="form-group">
+                    <label>Fecha del Incidente *</label>
+                    <div class="date-type-selector">
+                        <label class="radio-label">
+                            <input type="radio" name="date_type" value="single" checked>
+                            Fecha única
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="date_type" value="range">
+                            Rango de fechas
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="single-date-group">
+                    <label for="incident_date">Fecha del Incidente *</label>
+                    <input type="date" id="incident_date" name="incident_date" required>
+                </div>
+
+                <div class="form-group" id="date-range-group" style="display: none;">
+                    <div class="date-range-container">
+                        <div class="date-field">
+                            <label for="incident_date_initial">Fecha Inicial *</label>
+                            <input type="date" id="incident_date_initial" name="incident_date_initial">
+                        </div>
+                        <div class="date-field">
+                            <label for="incident_date_end">Fecha Final *</label>
+                            <input type="date" id="incident_date_end" name="incident_date_end">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Asunto *</label>
+                    <input type="text" id="subject" name="subject" required placeholder="Resumen breve del reporte">
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Su Mensaje *</label>
+                    <textarea id="message" name="message" required placeholder="Describa detalladamente la situación que desea reportar" rows="6"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="attachments">Archivos Adjuntos (Opcional)</label>
+                    <input type="file" id="attachments" name="attachments" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx">
+                    <small>Formatos permitidos: PDF, PNG, JPG, DOC, DOCX, XLS, XLSX (máx. 5MB)</small>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label small-text">
+                        <input type="checkbox" id="dataConsent" required>
+                        * Autorizo el tratamiento de mis datos personales de acuerdo con la <a href="tratamientodedatos.pdf" target="_blank" rel="noopener noreferrer">Política de Tratamiento de Datos Personales</a>.
+                    </label>
+                </div>
+
+                <button type="submit" class="submit-btn">Enviar Reporte</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="loadingModal" class="modal">
+        <div class="modal-content">
+            <div class="spinner"></div>
+            <p>Enviando reporte...</p>
+        </div>
+    </div>
+
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="success-icon">✓</div>
+            <h3>Reporte Enviado Exitosamente</h3>
+            <p>Su reporte ha sido recibido y será procesado de acuerdo a nuestros procedimientos internos.</p>
+            <button onclick="closeModal('successModal')">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <div class="error-icon">✗</div>
+            <h3>Error al Enviar</h3>
+            <p id="errorMessage">Ha ocurrido un error. Por favor, intente nuevamente.</p>
+            <button onclick="closeModal('errorModal')">Cerrar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

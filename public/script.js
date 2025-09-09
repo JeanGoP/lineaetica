@@ -1,0 +1,357 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('ethicsForm');
+    const anonymousToggle = document.getElementById('anonymousToggle');
+    const personalInfo = document.getElementById('personalInfo');
+    const nameField = document.getElementById('name');
+    const emailField = document.getElementById('email');
+    const phoneField = document.getElementById('phone');
+    const positionField = document.getElementById('position');
+    const companyField = document.getElementById('company');
+    const areaField = document.getElementById('area');
+    const puntosVentaField = document.getElementById('puntos_venta');
+    const incidentDateField = document.getElementById('incident_date');
+
+    // Función para obtener parámetros de la URL
+    function getURLParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    // Prellenar el campo empresa desde la URL
+    function setCompanyFromURL() {
+        const empresaParam = getURLParameter('empresa');
+        if (empresaParam) {
+            const empresaDecoded = decodeURIComponent(empresaParam);
+            companyField.value = empresaDecoded;
+            
+            companyField.readOnly = true;
+            companyField.style.backgroundColor = '#f8f9fa';
+            companyField.style.cursor = 'not-allowed';
+            
+            const companyGroup = companyField.closest('.form-group');
+            if (companyGroup) {
+                const label = companyGroup.querySelector('label');
+                if (label && !label.querySelector('.auto-filled')) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'auto-filled';
+                    indicator.style.color = '#28a745';
+                    indicator.style.fontSize = '0.8em';
+                    indicator.style.marginLeft = '5px';
+                    indicator.textContent = '(Auto-completado)';
+                    label.appendChild(indicator);
+                }
+            }
+            
+            console.log('Campo empresa prellenado con:', empresaDecoded);
+        }
+    }
+
+    // Función para permitir edición del campo empresa
+    function enableCompanyEdit() {
+        const empresaParam = getURLParameter('editable');
+        if (empresaParam === 'true' && companyField.readOnly) {
+            companyField.readOnly = false;
+            companyField.style.backgroundColor = '';
+            companyField.style.cursor = '';
+            
+            const indicator = document.querySelector('.auto-filled');
+            if (indicator) {
+                indicator.textContent = '(Editable)';
+                indicator.style.color = '#ffc107';
+            }
+        }
+    }
+
+    // Función para manejar la activación del campo Punto de Venta
+    function handlePuntosVentaActivation() {
+        const empresaValue = companyField.value;
+        const areaValue = areaField.value;
+        
+        console.log('Empresa:', empresaValue, 'Área:', areaValue);
+        
+        const empresasConPuntosVenta = [
+            'Centromotos', 'Distrimotos', 'Credimotos', 'Credimovil', 'Motomovil', 
+            'Sabanamotos', 'Motocredito', 'Motos Del Aburra', 'Fintotal', 
+            'Motoracing', 'Motos Del Darien'
+        ];
+        
+        if (areaValue === 'Comercial: Venta y Posventa' && empresasConPuntosVenta.includes(empresaValue)) {
+            puntosVentaField.disabled = false;
+            puntosVentaField.classList.remove('disabled-field');
+            
+            console.log('Activando campo puntos de venta para:', empresaValue);
+            
+            const options = puntosVentaField.querySelectorAll('option');
+            options.forEach(option => {
+                if (option.value === '') {
+                    option.style.display = 'block';
+                } else if (option.dataset.empresa === empresaValue) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+            
+            const currentValue = puntosVentaField.value;
+            const currentOption = puntosVentaField.querySelector(`option[value="${currentValue}"]`);
+            if (currentValue && (!currentOption || currentOption.dataset.empresa !== empresaValue)) {
+                puntosVentaField.value = '';
+            }
+        } else {
+            puntosVentaField.disabled = true;
+            puntosVentaField.classList.add('disabled-field');
+            puntosVentaField.value = '';
+            
+            console.log('Desactivando campo puntos de venta');
+            
+            const options = puntosVentaField.querySelectorAll('option');
+            options.forEach(option => {
+                option.style.display = 'block';
+            });
+        }
+    }
+
+    // Función para manejar el modo anónimo
+    function toggleAnonymousMode(isAnonymous) {
+        // Campos que se ocultan en modo anónimo
+        // Actualizar la lista fieldsToHide para incluir los nuevos campos
+        const fieldsToHide = [
+            nameField.closest('.form-group'),
+            emailField.closest('.form-group'),
+            phoneField.closest('.form-group'),
+            companyField.closest('.form-group'),
+            positionField.closest('.form-group'),
+            incidentDateField.closest('.form-group'), // Fecha del incidente
+            document.getElementById('single-date-group'), // Grupo fecha única
+            document.getElementById('date-range-group') // Grupo rango fechas
+        ];
+    
+        if (isAnonymous) {
+            // Ocultar información personal usando la clase específica
+            personalInfo.classList.add('hidden');
+            
+            // Ocultar otros campos usando la clase general
+            fieldsToHide.forEach(field => {
+                if (field) {
+                    field.classList.add('hidden');
+                }
+            });
+    
+            // Remover atributos required de campos ocultos
+            nameField.removeAttribute('required');
+            emailField.removeAttribute('required');
+            companyField.removeAttribute('required');
+            areaField.removeAttribute('required');
+            
+            // Limpiar valores de campos ocultos
+            nameField.value = '';
+            emailField.value = '';
+            document.getElementById('phone').value = '';
+            companyField.value = '';
+            areaField.value = '';
+            puntosVentaField.value = '';
+            incidentDateField.value = '';
+            
+            console.log('Modo anónimo activado - Solo campos permitidos visibles');
+        } else {
+            // Mostrar información personal
+            personalInfo.classList.remove('hidden');
+            
+            // Mostrar otros campos
+            fieldsToHide.forEach(field => {
+                if (field) {
+                    field.classList.remove('hidden');
+                }
+            });
+    
+            // Restaurar atributos required
+            nameField.setAttribute('required', 'required');
+            emailField.setAttribute('required', 'required');
+            companyField.setAttribute('required', 'required');
+            areaField.setAttribute('required', 'required');
+            
+            // Restaurar empresa desde URL si existe
+            setCompanyFromURL();
+            
+            console.log('Modo anónimo desactivado - Todos los campos visibles');
+        }
+    }
+
+    // Ejecutar las funciones de inicialización
+    setCompanyFromURL();
+    enableCompanyEdit();
+    
+    // Event listeners
+    companyField.addEventListener('input', handlePuntosVentaActivation);
+    companyField.addEventListener('change', handlePuntosVentaActivation);
+    areaField.addEventListener('change', handlePuntosVentaActivation);
+    
+    // Ejecutar la validación inicial después de configurar la empresa
+    setTimeout(handlePuntosVentaActivation, 100);
+
+    // Manejar toggle anónimo con la nueva funcionalidad
+    anonymousToggle.addEventListener('change', function() {
+        toggleAnonymousMode(this.checked);
+    });
+
+    // Manejar envío del formulario
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Validación básica del formulario HTML5
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        // Validar archivos
+        const fileInput = document.getElementById('attachments');
+        const files = fileInput.files;
+        
+        for (let file of files) {
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                showError('Uno o más archivos exceden el tamaño máximo de 5MB');
+                return;
+            }
+        }
+
+        // Mostrar modal de carga
+        showModal('loadingModal');
+
+        try {
+            const formData = new FormData(form);
+            formData.append('anonymous', anonymousToggle.checked);
+
+            const response = await fetch('/api/submit-report', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            hideModal('loadingModal');
+
+            if (response.ok && result.success) {
+                showModal('successModal');
+                form.reset();
+                // Restaurar estado inicial según el modo anónimo
+                toggleAnonymousMode(false);
+                anonymousToggle.checked = false;
+            } else {
+                showError(result.message || 'Error al enviar el reporte');
+            }
+        } catch (error) {
+            hideModal('loadingModal');
+            showError('Error de conexión. Por favor, intente nuevamente.');
+            console.error('Error:', error);
+        }
+    });
+
+    // Validación en tiempo real
+    const requiredFields = form.querySelectorAll('[required]');
+    requiredFields.forEach(field => {
+        field.addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                this.style.borderColor = '#e74c3c';
+            } else {
+                this.style.borderColor = '#e1e8ed';
+            }
+        });
+    });
+});
+
+function showModal(modalId) {
+    document.getElementById(modalId).style.display = 'flex';
+}
+
+function hideModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function closeModal(modalId) {
+    hideModal(modalId);
+}
+
+function showError(message) {
+    document.getElementById('errorMessage').textContent = message;
+    showModal('errorModal');
+}
+
+window.addEventListener('click', function(event) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+
+// Agregar al final del archivo, antes del último }
+
+// Manejo de tipo de fecha (única vs rango)
+function initializeDateTypeHandler() {
+    const dateTypeRadios = document.querySelectorAll('input[name="date_type"]');
+    const singleDateGroup = document.getElementById('single-date-group');
+    const dateRangeGroup = document.getElementById('date-range-group');
+    const incidentDate = document.getElementById('incident_date');
+    const incidentDateInitial = document.getElementById('incident_date_initial');
+    const incidentDateEnd = document.getElementById('incident_date_end');
+
+    function toggleDateFields() {
+        const selectedType = document.querySelector('input[name="date_type"]:checked').value;
+        
+        if (selectedType === 'single') {
+            singleDateGroup.style.display = 'block';
+            dateRangeGroup.style.display = 'none';
+            
+            // Hacer obligatorio el campo de fecha única
+            incidentDate.required = true;
+            incidentDateInitial.required = false;
+            incidentDateEnd.required = false;
+            
+            // Limpiar campos de rango
+            incidentDateInitial.value = '';
+            incidentDateEnd.value = '';
+        } else {
+            singleDateGroup.style.display = 'none';
+            dateRangeGroup.style.display = 'block';
+            
+            // Hacer obligatorios los campos de rango
+            incidentDate.required = false;
+            incidentDateInitial.required = true;
+            incidentDateEnd.required = true;
+            
+            // Limpiar campo de fecha única
+            incidentDate.value = '';
+        }
+    }
+
+    // Agregar event listeners
+    dateTypeRadios.forEach(radio => {
+        radio.addEventListener('change', toggleDateFields);
+    });
+
+    // Validación adicional para rango de fechas
+    incidentDateEnd.addEventListener('change', function() {
+        if (incidentDateInitial.value && incidentDateEnd.value) {
+            if (new Date(incidentDateEnd.value) < new Date(incidentDateInitial.value)) {
+                alert('La fecha final no puede ser anterior a la fecha inicial');
+                incidentDateEnd.value = '';
+            }
+        }
+    });
+
+    incidentDateInitial.addEventListener('change', function() {
+        if (incidentDateInitial.value && incidentDateEnd.value) {
+            if (new Date(incidentDateEnd.value) < new Date(incidentDateInitial.value)) {
+                alert('La fecha final no puede ser anterior a la fecha inicial');
+                incidentDateEnd.value = '';
+            }
+        }
+    });
+}
+
+// Llamar la función cuando se carga la página
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDateTypeHandler();
+});
