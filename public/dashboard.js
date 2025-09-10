@@ -3,6 +3,16 @@ let allReports = [];
 let filteredReports = [];
 let currentUser = null;
 
+// Variables de paginación
+let currentPage = 1;
+const recordsPerPage = 10;
+let totalPages = 1;
+
+// Función para calcular páginas totales
+function calculateTotalPages(totalRecords) {
+    return Math.ceil(totalRecords / recordsPerPage);
+}
+
 // Inicializacion cuando el DOM este listo
 document.addEventListener('DOMContentLoaded', function() {
     initializeDashboard();
@@ -242,12 +252,20 @@ function applyFilters() {
     updateMetrics();
 }
 
-// Actualizar la tabla de reportes
+// Actualizar la tabla de reportes con paginación
 function updateReportsTable() {
     const tableBody = document.getElementById('reportsTableBody');
     const reportCount = document.getElementById('reportCount');
     
     if (!tableBody) return;
+    
+    // Calcular páginas totales
+    totalPages = calculateTotalPages(filteredReports.length);
+    
+    // Asegurar que la página actual esté en rango válido
+    if (currentPage > totalPages) {
+        currentPage = Math.max(1, totalPages);
+    }
     
     // Actualizar contador
     if (reportCount) {
@@ -265,14 +283,85 @@ function updateReportsTable() {
                 </td>
             </tr>
         `;
+        updatePaginationControls();
         return;
     }
     
-    // Agregar filas de reportes
-    filteredReports.forEach(report => {
+    // Calcular registros para la página actual
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = startIndex + recordsPerPage;
+    const currentPageReports = filteredReports.slice(startIndex, endIndex);
+    
+    // Agregar filas de reportes de la página actual
+    currentPageReports.forEach(report => {
         const row = createReportRow(report);
         tableBody.appendChild(row);
     });
+    
+    // Actualizar controles de paginación
+    updatePaginationControls();
+}
+
+// Actualizar controles de paginación
+function updatePaginationControls() {
+    const paginationContainer = document.getElementById('paginationControls');
+    if (!paginationContainer) return;
+    
+    if (totalPages <= 1) {
+        paginationContainer.style.display = 'none';
+        return;
+    }
+    
+    paginationContainer.style.display = 'flex';
+    
+    // Actualizar información de página
+    const pageInfo = document.getElementById('pageInfo');
+    if (pageInfo) {
+        const startRecord = (currentPage - 1) * recordsPerPage + 1;
+        const endRecord = Math.min(currentPage * recordsPerPage, filteredReports.length);
+        pageInfo.textContent = `Página ${currentPage} de ${totalPages} (${startRecord}-${endRecord} de ${filteredReports.length} registros)`;
+    }
+    
+    // Actualizar estado de botones
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    const firstBtn = document.getElementById('firstPageBtn');
+    const lastBtn = document.getElementById('lastPageBtn');
+    
+    if (prevBtn) prevBtn.disabled = currentPage === 1;
+    if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+    if (firstBtn) firstBtn.disabled = currentPage === 1;
+    if (lastBtn) lastBtn.disabled = currentPage === totalPages;
+    
+    // Actualizar números de página
+    updatePageNumbers();
+}
+
+// Actualizar números de página
+function updatePageNumbers() {
+    const pageNumbersContainer = document.getElementById('pageNumbers');
+    if (!pageNumbersContainer) return;
+    
+    pageNumbersContainer.innerHTML = '';
+    
+    // Calcular rango de páginas a mostrar
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Ajustar si estamos cerca del final
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // Crear botones de número de página
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `page-number-btn ${i === currentPage ? 'active' : ''}`;
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => goToPage(i);
+        pageNumbersContainer.appendChild(pageBtn);
+    }
 }
 
 // Crear una fila de reporte para la tabla
@@ -663,6 +752,30 @@ function exportToExcel() {
         console.error('Error al exportar a Excel:', error);
         showError('Error al exportar los datos. Por favor, intenta de nuevo.');
     }
+}
+
+// Funciones de navegación de paginación
+function goToPage(page) {
+    if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        updateReportsTable();
+    }
+}
+
+function goToFirstPage() {
+    goToPage(1);
+}
+
+function goToLastPage() {
+    goToPage(totalPages);
+}
+
+function goToPreviousPage() {
+    goToPage(currentPage - 1);
+}
+
+function goToNextPage() {
+    goToPage(currentPage + 1);
 }
 
 // Funciones de notificacion

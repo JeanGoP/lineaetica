@@ -193,6 +193,60 @@
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Controles de Paginación Profesionales -->
+                <div id="paginationControls" class="pagination-wrapper" style="display: none;">
+                    <div class="pagination-container">
+                        <!-- Información de página -->
+                        <div class="pagination-info-section">
+                            <div class="pagination-status">
+                                <span class="page-indicator" id="pageInfo">Página 1 de 1</span>
+                                <span class="records-indicator" id="recordsInfo">Mostrando 1-10 de 47 registros</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Controles de navegación -->
+                        <div class="pagination-navigation">
+                            <div class="nav-group nav-group-left">
+                                <button id="firstPageBtn" class="nav-btn nav-btn-first" onclick="goToFirstPage()" title="Primera página">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="11,17 6,12 11,7"></polyline>
+                                        <polyline points="18,17 13,12 18,7"></polyline>
+                                    </svg>
+                                    <span class="nav-label">Primera</span>
+                                </button>
+                                <button id="prevPageBtn" class="nav-btn nav-btn-prev" onclick="goToPreviousPage()" title="Página anterior">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="15,18 9,12 15,6"></polyline>
+                                    </svg>
+                                    <span class="nav-label">Anterior</span>
+                                </button>
+                            </div>
+                            
+                            <div class="page-numbers-container">
+                                <div id="pageNumbers" class="page-numbers">
+                                    <!-- Los números de página se generan dinámicamente -->
+                                </div>
+                            </div>
+                            
+                            <div class="nav-group nav-group-right">
+                                <button id="nextPageBtn" class="nav-btn nav-btn-next" onclick="goToNextPage()" title="Página siguiente">
+                                    <span class="nav-label">Siguiente</span>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="9,18 15,12 9,6"></polyline>
+                                    </svg>
+                                </button>
+                                <button id="lastPageBtn" class="nav-btn nav-btn-last" onclick="goToLastPage()" title="Última página">
+                                    <span class="nav-label">Última</span>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="13,17 18,12 13,7"></polyline>
+                                        <polyline points="6,17 11,12 6,7"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
