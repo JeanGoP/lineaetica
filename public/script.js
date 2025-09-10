@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
             'Motoracing', 'Motos Del Darien'
         ];
         
-        if (areaValue === 'Comercial: Venta y Posventa' && empresasConPuntosVenta.includes(empresaValue)) {
+        if (areaValue === 'comercial_venta_posventa' && empresasConPuntosVenta.includes(empresaValue)) {
             puntosVentaField.disabled = false;
             puntosVentaField.classList.remove('disabled-field');
             
