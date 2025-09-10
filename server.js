@@ -100,7 +100,7 @@ async function connectDB() {
         
         // Probar la conexión con una consulta simple
         console.log('🧪 Ejecutando prueba de consulta...');
-        const testResult = await pool.request().query('SELECT 1 as test, GETDATE() as current_time, DB_NAME() as database_name');
+        const testResult = await pool.request().query('SELECT 1 as test, GETDATE() as fecha_actual, DB_NAME() as nombre_bd');
         console.log('✅ Prueba de consulta exitosa:', testResult.recordset[0]);
         
     } catch (err) {
@@ -447,7 +447,7 @@ app.get('/api/test-connection', async (req, res) => {
         }
 
         // Probar con una consulta simple
-        const result = await pool.request().query('SELECT GETDATE() as current_time, DB_NAME() as database_name');
+        const result = await pool.request().query('SELECT GETDATE() as fecha_actual, DB_NAME() as nombre_bd');
         
         res.json({
             success: true,
