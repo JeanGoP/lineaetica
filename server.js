@@ -17,11 +17,11 @@ app.use(express.static('public'));
 
 // Configuración de SQL Server
 const config = {
-    server: 'stecno.dyndns.org',
-    port: 1433, // Puerto estándar de SQL Server
-    user: 'sa',
-    password: 'Sintesis2018*',
-    database: 'etica',
+    server: process.env.DB_SERVER || 'stecno.dyndns.org',
+    port: parseInt(process.env.DB_PORT) || 1433, // Puerto estándar de SQL Server
+    user: process.env.DB_USER || 'sa',
+    password: process.env.DB_PASSWORD || 'Sintesis2018*',
+    database: process.env.DB_DATABASE || 'etica',
     options: {
         encrypt: false,
         trustServerCertificate: true,
