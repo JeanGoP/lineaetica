@@ -80,20 +80,20 @@ async function connectDB() {
         
         pool = await sql.connect(config);
         isConnected = true;
-        console.log('✅ Conectado exitosamente a SQL Server');
+        console.log('Conectado exitosamente a SQL Server');
         
         // Manejar eventos de conexión
         pool.on('error', err => {
-            console.error('❌ Error en la conexión de SQL Server:', err);
+            console.error('Error en la conexión de SQL Server:', err);
             isConnected = false;
         });
         
         // Probar la conexión con una consulta simple
         const testResult = await pool.request().query('SELECT 1 as test');
-        console.log('✅ Prueba de consulta exitosa:', testResult.recordset);
+        console.log('Prueba de consulta exitosa:', testResult.recordset);
         
     } catch (err) {
-        console.error('❌ Error conectando a la base de datos:');
+        console.error('Error conectando a la base de datos:');
         console.error('Código de error:', err.code);
         console.error('Mensaje:', err.message);
         console.error('Detalles completos:', err);
@@ -124,10 +124,6 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
 
         console.log('=== DATOS RECIBIDOS EN EL SERVIDOR ===');
         console.log('req.body completo:', req.body);
-        // ❌ ELIMINAR estas líneas de aquí:
-        // console.log('incident_date:', incident_date);
-        // console.log('incident_date_initial:', incident_date_initial);
-        // console.log('incident_date_end:', incident_date_end);
         console.log('Archivos recibidos:', req.files);
 
         const {
@@ -148,7 +144,7 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
             incident_date_end
         } = req.body;
 
-        // ✅ MOVER estas líneas aquí:
+        // Mover estas líneas aquí:
         console.log('incident_date:', incident_date);
         console.log('incident_date_initial:', incident_date_initial);
         console.log('incident_date_end:', incident_date_end);
@@ -163,7 +159,7 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
         
         // Validación estricta del campo situation_relation
         if (situation_relation === undefined || situation_relation === null || situation_relation === '' || !situation_relation.toString().trim()) {
-            console.log('❌ RECHAZANDO: situation_relation es inválido');
+            console.log('RECHAZANDO: situation_relation es inválido');
             return res.status(400).json({
                 success: false,
                 message: 'El campo "¿Qué relación tiene con la situación expuesta?" es requerido y no puede estar vacío'
@@ -171,7 +167,7 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
         }
         
         const cleanSituationRelation = situation_relation.toString().trim();
-        console.log('✅ situation_relation limpio:', cleanSituationRelation);
+        console.log('situation_relation limpio:', cleanSituationRelation);
 
         // Procesar archivos adjuntos
         let attachmentUrls = [];
@@ -211,7 +207,7 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
                 (@id, @name, @email, @phone, @company, @position, @situation_relation, @area, @type, @subject, @message, @anonymous, @attachment_urls, @puntos_venta, @incident_date, @incident_date_initial, @incident_date_end)
             `);
 
-        console.log('✅ Reporte guardado exitosamente con ID:', reportId);
+        console.log('Reporte guardado exitosamente con ID:', reportId);
 
         res.json({ 
             success: true, 
@@ -220,7 +216,7 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
         });
 
     } catch (err) {
-        console.error('❌ ERROR COMPLETO AL ENVIAR REPORTE:');
+        console.error('ERROR COMPLETO AL ENVIAR REPORTE:');
         console.error('Mensaje de error:', err.message);
         console.error('Código de error:', err.code);
         console.error('Número de error:', err.number);
@@ -243,6 +239,139 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
         res.status(500).json({ 
             success: false,
             message: 'Error interno del servidor. Por favor, intente nuevamente.'
+        });
+    }
+});
+
+// Ruta para obtener todos los reportes
+app.get('/api/reports', async (req, res) => {
+    try {
+        if (!isConnected) {
+            await connectDB();
+        }
+
+        const result = await pool.request().query(`
+            SELECT 
+                id,
+                name,
+                email,
+                phone,
+                company,
+                position,
+                situation_relation,
+                area,
+                type as tipo,
+                subject as asunto,
+                message as mensaje,
+                anonymous,
+                attachment_urls,
+                puntos_venta as punto_venta,
+                incident_date as fecha_incidente,
+                incident_date_initial as fecha_incidente_inicial,
+                incident_date_end as fecha_incidente_final,
+                created_at as fecha,
+                'Pendiente' as estado
+            FROM feedback 
+            ORDER BY created_at DESC
+        `);
+        
+        console.log('Datos obtenidos de la base de datos:', result.recordset.length, 'registros');
+
+        // Procesar los datos para el formato esperado
+        const processedData = result.recordset.map(record => {
+            let attachmentUrls = [];
+            try {
+                if (record.attachment_urls) {
+                    attachmentUrls = JSON.parse(record.attachment_urls);
+                }
+            } catch (e) {
+                console.error('Error parsing attachment_urls:', e);
+            }
+
+            return {
+                ...record,
+                attachment_urls: attachmentUrls,
+                fecha: record.fecha ? record.fecha.toISOString().split('T')[0] : null,
+                fecha_incidente: record.fecha_incidente ? record.fecha_incidente.toISOString().split('T')[0] : null
+            };
+        });
+
+        res.json({
+            success: true,
+            reports: processedData
+        });
+
+    } catch (error) {
+        console.error('Error obteniendo reportes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error obteniendo reportes de la base de datos'
+        });
+    }
+});
+
+// Ruta para obtener todos los reportes de feedback
+app.get('/api/feedback', async (req, res) => {
+    try {
+        if (!pool || !isConnected) {
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Error de conexión a la base de datos' 
+            });
+        }
+
+        const request = pool.request();
+        const result = await request.query(`
+            SELECT 
+                id,
+                name,
+                email,
+                phone,
+                company,
+                position,
+                situation_relation,
+                area,
+                type,
+                subject,
+                message,
+                anonymous,
+                attachment_urls,
+                puntos_venta,
+                incident_date,
+                incident_date_initial,
+                incident_date_end,
+                created_at
+            FROM feedback 
+            ORDER BY created_at DESC
+        `);
+
+        // Procesar los datos para parsear attachment_urls
+        const feedbackData = result.recordset.map(record => {
+            let attachments = [];
+            try {
+                if (record.attachment_urls) {
+                    attachments = JSON.parse(record.attachment_urls);
+                }
+            } catch (e) {
+                console.error('Error parsing attachment_urls:', e);
+            }
+            
+            return {
+                ...record,
+                attachments: attachments
+            };
+        });
+
+        res.json({ 
+            success: true, 
+            data: feedbackData 
+        });
+
+    } catch (err) {
+        console.error('Error obteniendo feedback:', err);
+        res.status(500).json({ 
+            success: false,
+            message: 'Error interno del servidor'
         });
     }
 });
@@ -291,6 +420,39 @@ app.get('/api/test-connection', async (req, res) => {
             message: 'Error al probar la conexión',
             error: err.message,
             connected: false
+        });
+    }
+});
+
+// Endpoint temporal para verificar estructura de tabla
+app.get('/api/check-table-structure', async (req, res) => {
+    try {
+        if (!pool || !isConnected) {
+            return res.status(500).json({
+                success: false,
+                message: 'No hay conexión activa a la base de datos'
+            });
+        }
+
+        // Verificar columnas de la tabla feedback
+        const result = await pool.request().query(`
+            SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_NAME = 'feedback'
+            ORDER BY ORDINAL_POSITION
+        `);
+        
+        res.json({
+            success: true,
+            columns: result.recordset
+        });
+        
+    } catch (err) {
+        console.error('Error al verificar estructura:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Error al verificar estructura de tabla',
+            error: err.message
         });
     }
 });

@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(form);
             formData.append('anonymous', anonymousToggle.checked);
 
-            const response = await fetch('/api/submit-report', {
+            const response = await fetch('http://localhost:3000/api/submit-report', {
                 method: 'POST',
                 body: formData
             });
@@ -258,6 +258,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Inicializar funcionalidades
+    initializeDateTypeHandler();
+    initializeAdminFunctionality();
 });
 
 function showModal(modalId) {
@@ -352,6 +356,145 @@ function initializeDateTypeHandler() {
 }
 
 // Llamar la función cuando se carga la página
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDateTypeHandler();
-});
+// Consolidado en el evento DOMContentLoaded principal
+
+// Funcionalidad del Admin
+function initializeAdminFunctionality() {
+    const adminBtn = document.getElementById('adminBtn');
+    const adminModal = document.getElementById('adminModal');
+    const adminForm = document.getElementById('adminForm');
+    const usernameField = document.getElementById('adminUsername');
+    const passwordField = document.getElementById('adminPassword');
+    
+    // Abrir modal de admin
+    adminBtn.addEventListener('click', function() {
+        showModal('adminModal');
+        // Limpiar campos y errores al abrir
+        adminForm.reset();
+        clearFieldErrors();
+    });
+    
+    // Validación en tiempo real para campos de admin
+    usernameField.addEventListener('input', function() {
+        validateEmailField(this);
+    });
+    
+    usernameField.addEventListener('blur', function() {
+        validateEmailField(this);
+    });
+    
+    passwordField.addEventListener('input', function() {
+        validatePasswordField(this);
+    });
+    
+    passwordField.addEventListener('blur', function() {
+        validatePasswordField(this);
+    });
+    
+    // Manejar envío del formulario de admin
+    adminForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const username = usernameField.value.trim();
+        const password = passwordField.value;
+        
+        // Validar campos antes del envío
+        const isUsernameValid = validateEmailField(usernameField);
+        const isPasswordValid = validatePasswordField(passwordField);
+        
+        if (!isUsernameValid || !isPasswordValid) {
+            return;
+        }
+        
+        // Validar credenciales
+        if (username === 'mrocha@motosyservicios.com' && password === 'NxJkLxhfGCpcg5v') {
+            // Establecer sesión de autenticación
+            sessionStorage.setItem('adminAuthenticated', 'true');
+            // Credenciales correctas - redirigir al dashboard
+            closeModal('adminModal');
+            window.location.href = 'dashboard.html';
+        } else {
+            // Credenciales incorrectas
+            showFieldError(usernameField, 'Usuario o contraseña incorrectos');
+            showFieldError(passwordField, '');
+        }
+    });
+}
+
+// Función para validar campo de email
+function validateEmailField(field) {
+    const value = field.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!value) {
+        showFieldError(field, 'El usuario es requerido');
+        return false;
+    } else if (!emailRegex.test(value)) {
+        showFieldError(field, 'Ingrese un email válido');
+        return false;
+    } else {
+        clearFieldError(field);
+        return true;
+    }
+}
+
+// Función para validar campo de contraseña
+function validatePasswordField(field) {
+    const value = field.value;
+    
+    if (!value) {
+        showFieldError(field, 'La contraseña es requerida');
+        return false;
+    } else if (value.length < 6) {
+        showFieldError(field, 'La contraseña debe tener al menos 6 caracteres');
+        return false;
+    } else {
+        clearFieldError(field);
+        return true;
+    }
+}
+
+// Función para mostrar error en campo
+function showFieldError(field, message) {
+    clearFieldError(field);
+    
+    if (message) {
+        field.style.borderColor = '#ef4444';
+        field.style.background = '#fef2f2';
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = message;
+        errorDiv.style.cssText = `
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 500;
+        `;
+        
+        field.parentNode.appendChild(errorDiv);
+    }
+}
+
+// Función para limpiar error de campo
+function clearFieldError(field) {
+    field.style.borderColor = '';
+    field.style.background = '';
+    
+    const existingError = field.parentNode.querySelector('.field-error');
+    if (existingError) {
+        existingError.remove();
+    }
+}
+
+// Función para limpiar todos los errores de campos
+function clearFieldErrors() {
+    const errorElements = document.querySelectorAll('.field-error');
+    errorElements.forEach(error => error.remove());
+    
+    const fields = document.querySelectorAll('#adminModal input');
+    fields.forEach(field => {
+        field.style.borderColor = '';
+        field.style.background = '';
+    });
+}

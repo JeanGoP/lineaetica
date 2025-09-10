@@ -9,8 +9,13 @@
 <body>
     <div class="container">
         <header>
-            <h1>Línea Ética</h1>
-            <p>Canal seguro para denuncias de conductas no éticas y consultas empresariales internas. Todas las comunicaciones son tratadas con estricta confidencialidad.</p>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>Línea Ética</h1>
+                    <p>Canal seguro para denuncias de conductas no éticas y consultas empresariales internas. Todas las comunicaciones son tratadas con estricta confidencialidad.</p>
+                </div>
+                <button id="adminBtn" class="admin-btn">Admin</button>
+            </div>
         </header>
 
         <div class="form-container">
@@ -300,7 +305,7 @@
 
     <div id="successModal" class="modal">
         <div class="modal-content">
-            <div class="success-icon">✓</div>
+            <div class="success-icon">OK</div>
             <h3>Reporte Enviado Exitosamente</h3>
             <p>Su reporte ha sido recibido y será procesado de acuerdo a nuestros procedimientos internos.</p>
             <button onclick="closeModal('successModal')">Cerrar</button>
@@ -309,10 +314,29 @@
 
     <div id="errorModal" class="modal">
         <div class="modal-content">
-            <div class="error-icon">✗</div>
+            <div class="error-icon">ERROR</div>
             <h3>Error al Enviar</h3>
             <p id="errorMessage">Ha ocurrido un error. Por favor, intente nuevamente.</p>
             <button onclick="closeModal('errorModal')">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Autenticación Admin -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content admin-modal">
+            <span class="close" onclick="closeModal('adminModal')">&times;</span>
+            <h3>Acceso Administrativo</h3>
+            <form id="adminForm">
+                <div class="form-group">
+                    <label for="adminUsername">Usuario:</label>
+                    <input type="email" id="adminUsername" name="adminUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Contraseña:</label>
+                    <input type="password" id="adminPassword" name="adminPassword" required>
+                </div>
+                <button type="submit" class="admin-login-btn">Iniciar Sesión</button>
+            </form>
         </div>
     </div>
 

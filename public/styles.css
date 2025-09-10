@@ -209,7 +209,7 @@ small {
 }
 
 .checkbox-label input[type="checkbox"]:checked + .checkmark:after {
-    content: '✓';
+    content: 'OK';
     font-size: 12px;
     font-weight: bold;
 }
@@ -264,17 +264,20 @@ small {
     height: 100%;
     background-color: rgba(0,0,0,0.5);
     backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-content {
     background-color: white;
-    margin: 15% auto;
+    margin: 0;
     padding: 40px;
     border-radius: 15px;
     width: 90%;
     max-width: 400px;
     text-align: center;
     box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    position: relative;
 }
 
 .spinner {
@@ -456,5 +459,161 @@ select:disabled {
     
     .date-field {
         min-width: 100%;
+    }
+}
+
+/* Estilos para Header con botón Admin */
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+}
+
+.header-text {
+    flex: 1;
+}
+
+.admin-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.admin-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Estilos para Modal de Admin */
+.admin-modal {
+    max-width: 450px;
+    padding: 35px;
+    position: relative;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+/* Botón de cerrar */
+.admin-modal .close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    z-index: 10;
+    line-height: 1;
+}
+
+.admin-modal .close:hover {
+    color: #374151;
+    background: #f3f4f6;
+    transform: rotate(90deg);
+}
+
+.admin-modal h3 {
+    color: #1e40af;
+    margin-bottom: 30px;
+    text-align: center;
+    font-size: 1.6em;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.admin-modal .form-group {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.admin-modal label {
+    display: block;
+    margin-bottom: 10px;
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.admin-modal input {
+    width: 100%;
+    padding: 15px 18px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+    box-sizing: border-box;
+}
+
+.admin-modal input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.admin-modal input:invalid {
+    border-color: #ef4444;
+}
+
+.admin-modal input:invalid:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.admin-login-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    color: white;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+    text-transform: none;
+    letter-spacing: 0.5px;
+}
+
+.admin-login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+}
+
+.admin-login-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+    
+    .header-text {
+        text-align: center;
     }
 }

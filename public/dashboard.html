@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Linea Etica</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <!-- Script de Chart.js eliminado - ya no se usan graficos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>Dashboard - Linea Etica</h1>
+                <p>Panel de control administrativo</p>
+            </div>
+            <div class="header-tabs">
+                <button class="tab-btn active">Reportes</button>
+            </div>
+            <div class="header-right">
+                <button id="logoutBtn" class="logout-btn">Cerrar Sesion</button>
+            </div>
+        </header>
+
+        <!-- Seccion de Reportes -->
+        <main class="dashboard-content">
+            <!-- Filtros de Reportes -->
+            <div class="filters-section">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="filterTipo">Tipo</label>
+                        <select id="filterTipo" class="filter-select">
+                        <option value="">Todos los tipos</option>
+                        <option value="acoso">Acoso</option>
+                        <option value="conflicto_interes">Conflicto de interes</option>
+                        <option value="corrupcion">Corrupcion</option>
+                        <option value="discriminacion">Discriminacion</option>
+                        <option value="fraude">Fraude</option>
+                    </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterEmpresa">Empresa</label>
+                        <select id="filterEmpresa" class="filter-select">
+                            <option value="">Todas</option>
+                            <option value="Centromotos">Centromotos</option>
+                            <option value="Distrimotos">Distrimotos</option>
+                            <option value="Credimotos">Credimotos</option>
+                            <option value="Credimovil">Credimovil</option>
+                            <option value="Motomovil">Motomovil</option>
+                            <option value="Sabanamotos">Sabanamotos</option>
+                            <option value="Motocredito">Motocredito</option>
+                            <option value="Motos Del Aburra">Motos Del Aburra</option>
+                            <option value="Fintotal">Fintotal</option>
+                            <option value="Motoracing">Motoracing</option>
+                            <option value="Motos Del Darien">Motos Del Darien</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterArea">Area</label>
+                        <select id="filterArea" class="filter-select">
+                            <option value="">Todas</option>
+                            <option value="administracion">Administracion</option>
+                            <option value="administrativa">Administrativa</option>
+                            <option value="Comercial: Venta y Posventa">Comercial: Venta y Posventa</option>
+                            <option value="contabilidad">Contabilidad</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" id="puntoVentaGroup" style="display: none;">
+                        <label for="filterPuntoVenta">Punto de Venta</label>
+                        <select id="filterPuntoVenta" class="filter-select" disabled>
+                            <option value="">Todos los puntos</option>
+                            <!-- Centromotos -->
+                            <option value="Calle 170" data-empresa="Centromotos">Calle 170</option>
+                            <option value="Calle 80" data-empresa="Centromotos">Calle 80</option>
+                            <option value="Chapinero" data-empresa="Centromotos">Chapinero</option>
+                            <option value="Suba" data-empresa="Centromotos">Suba</option>
+                            <option value="Usaquen" data-empresa="Centromotos">Usaquen</option>
+                            <!-- Distrimotos -->
+                            <option value="Aguachica" data-empresa="Distrimotos">Aguachica</option>
+                            <option value="Agustin Codazzi" data-empresa="Distrimotos">Agustin Codazzi</option>
+                            <option value="Bosconia" data-empresa="Distrimotos">Bosconia</option>
+                            <option value="Chiquinquira" data-empresa="Distrimotos">Chiquinquira</option>
+                            <option value="Duitama" data-empresa="Distrimotos">Duitama</option>
+                            <option value="El Copey" data-empresa="Distrimotos">El Copey</option>
+                            <option value="Fonseca" data-empresa="Distrimotos">Fonseca</option>
+                            <option value="La Jagua" data-empresa="Distrimotos">La Jagua</option>
+                            <option value="La Loma" data-empresa="Distrimotos">La Loma</option>
+                            <option value="Maicao" data-empresa="Distrimotos">Maicao</option>
+                            <option value="Rioacha" data-empresa="Distrimotos">Rioacha</option>
+                            <option value="Santa Marta. Mobility" data-empresa="Distrimotos">Santa Marta. Mobility</option>
+                            <option value="Santa Marta. Tvs" data-empresa="Distrimotos">Santa Marta. Tvs</option>
+                            <option value="Sogamoso" data-empresa="Distrimotos">Sogamoso</option>
+                            <option value="Tunja" data-empresa="Distrimotos">Tunja</option>
+                            <option value="Ubate" data-empresa="Distrimotos">Ubate</option>
+                            <option value="Valledupar" data-empresa="Distrimotos">Valledupar</option>
+                            <!-- Credimotos -->
+                            <option value="Acacias" data-empresa="Credimotos">Acacias</option>
+                            <option value="Aguazul" data-empresa="Credimotos">Aguazul</option>
+                            <option value="Arauca" data-empresa="Credimotos">Arauca</option>
+                            <option value="Barrancas" data-empresa="Credimotos">Barrancas</option>
+                            <option value="Bogota" data-empresa="Credimotos">Bogota</option>
+                            <option value="Bucaramanga" data-empresa="Credimotos">Bucaramanga</option>
+                            <option value="Cucuta" data-empresa="Credimotos">Cucuta</option>
+                            <option value="Florencia" data-empresa="Credimotos">Florencia</option>
+                            <option value="Girardot" data-empresa="Credimotos">Girardot</option>
+                            <option value="Ibague" data-empresa="Credimotos">Ibague</option>
+                            <option value="Mocoa" data-empresa="Credimotos">Mocoa</option>
+                            <option value="Neiva" data-empresa="Credimotos">Neiva</option>
+                            <option value="Pasto" data-empresa="Credimotos">Pasto</option>
+                            <option value="Popayan" data-empresa="Credimotos">Popayan</option>
+                            <option value="Puerto Carreno" data-empresa="Credimotos">Puerto Carreno</option>
+                            <option value="Saravena" data-empresa="Credimotos">Saravena</option>
+                            <option value="Tame" data-empresa="Credimotos">Tame</option>
+                            <option value="Villavicencio" data-empresa="Credimotos">Villavicencio</option>
+                            <option value="Yopal" data-empresa="Credimotos">Yopal</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterPeriodo">Periodo</label>
+                        <select id="filterPeriodo" class="filter-select">
+                            <option value="">Todo</option>
+                            <option value="ultimo_mes">Ultimo mes</option>
+                            <option value="ultimos_3_meses">Ultimos 3 meses</option>
+                            <option value="ultimo_ano">Ultimo ano</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <input type="text" id="searchInput" placeholder="Buscar en asunto o mensaje..." class="search-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metricas de Reportes -->
+            <div class="metrics-section">
+                <div class="metric-card">
+                    <div class="metric-number" id="totalReports">0</div>
+                    <div class="metric-label">Total Reportes</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" id="pendingReports">0</div>
+                    <div class="metric-label">Pendientes</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" id="resolvedReports">0</div>
+                    <div class="metric-label">Resueltos</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" id="avgResponseTime">0</div>
+                    <div class="metric-label">Dias Promedio</div>
+                </div>
+            </div>
+
+            <!-- Tabla de Reportes -->
+            <div class="table-section">
+                <div class="table-header">
+                    <h3>Reportes (<span id="reportCount">0</span>)</h3>
+                    <button id="exportBtn" class="export-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7,10 12,15 17,10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Exportar a Excel
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table id="reportsTable" class="reports-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha Reporte</th>
+                                    <th>Fecha Incidente</th>
+                                    <th>Fecha Inicial Incidente</th>
+                                    <th>Fecha Final Incidente</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Telefono</th>
+                                    <th>Empresa</th>
+                                    <th>Cargo</th>
+                                    <th>Relacion</th>
+                                    <th>Area</th>
+                                    <th>Punto de Venta</th>
+                                    <th>Tipo</th>
+                                    <th>Asunto</th>
+                                    <th>Mensaje</th>
+                                    <th>Anonimo</th>
+                                </tr>
+                            </thead>
+                        <tbody id="reportsTableBody">
+                            <!-- Los datos se cargaran dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para visualizar archivos adjuntos -->
+    <div id="attachmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Archivos adjuntos</h2>
+                <span class="close" onclick="closeAttachmentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="attachment-section">
+                    <h3>Lista de archivos</h3>
+                    <div id="attachmentList" class="attachment-list">
+                        <!-- Los archivos se cargaran dinamicamente -->
+                    </div>
+                </div>
+                <div class="preview-section">
+                    <h3>Vista previa</h3>
+                    <div id="previewContainer" class="preview-container">
+                        <p class="preview-placeholder">Selecciona un archivo para ver la vista previa</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
