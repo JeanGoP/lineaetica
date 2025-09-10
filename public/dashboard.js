@@ -26,9 +26,8 @@ function checkAuthentication() {
     const userData = localStorage.getItem('userData');
     
     if (!token || !userData) {
-        // Para propositos de demostracion, crear un token temporal
-        localStorage.setItem('authToken', 'demo-token');
-        localStorage.setItem('userData', JSON.stringify({name: 'Usuario Demo', role: 'admin'}));
+        // Redirigir al login si no hay autenticacion
+        window.location.href = '/index.html';
         return;
     }
     
@@ -169,89 +168,15 @@ async function loadReportsData() {
         
     } catch (error) {
         console.error('Error al cargar reportes:', error);
-        showError('Error al cargar los reportes. Por favor, intenta de nuevo.');
-        
-        // Usar datos de ejemplo si hay error
-        loadSampleData();
+        showError('Error al cargar los reportes desde la base de datos.');
+        allReports = [];
+        applyFilters();
     } finally {
         showLoading(false);
     }
 }
 
-// Cargar datos de ejemplo para desarrollo/testing
-function loadSampleData() {
-    allReports = [
-        {
-            id: 1,
-            fechaReporte: '2024-01-15',
-            fechaIncidente: '2024-01-10',
-            fechaInicialIncidente: '2024-01-08',
-            fechaFinalIncidente: '2024-01-10',
-            nombre: 'Juan Perez',
-            email: 'juan.perez@email.com',
-            telefono: '3001234567',
-            empresa: 'Centromotos',
-            cargo: 'Vendedor',
-            relacion: 'Empleado',
-            area: 'Comercial: Venta y Posventa',
-            puntoVenta: 'Calle 170',
-            tipo: 'acoso',
-            asunto: 'Acoso laboral por parte del supervisor',
-            mensaje: 'Descripcion detallada del incidente de acoso laboral...',
-            anonimo: false,
-            archivos: ['documento1.pdf', 'evidencia1.jpg'],
-            estado: 'pendiente',
-            fechaCreacion: '2024-01-15T10:30:00Z'
-        },
-        {
-            id: 2,
-            fechaReporte: '2024-01-14',
-            fechaIncidente: '2024-01-12',
-            fechaInicialIncidente: '2024-01-12',
-            fechaFinalIncidente: '2024-01-12',
-            nombre: 'Maria Rodriguez',
-            email: 'maria.rodriguez@email.com',
-            telefono: '3009876543',
-            empresa: 'Distrimotos',
-            cargo: 'Contadora',
-            relacion: 'Empleado',
-            area: 'contabilidad',
-            puntoVenta: 'Valledupar',
-            tipo: 'fraude',
-            asunto: 'Irregularidades en manejo de caja',
-            mensaje: 'Se detectaron inconsistencias en los registros contables...',
-            anonimo: true,
-            archivos: [],
-            estado: 'en_revision',
-            fechaCreacion: '2024-01-14T14:20:00Z'
-        },
-        {
-            id: 3,
-            fechaReporte: '2024-01-13',
-            fechaIncidente: '2024-01-11',
-            fechaInicialIncidente: '2024-01-10',
-            fechaFinalIncidente: '2024-01-11',
-            nombre: 'Carlos Martinez',
-            email: 'carlos.martinez@email.com',
-            telefono: '3005555555',
-            empresa: 'Credimotos',
-            cargo: 'Gerente',
-            relacion: 'Empleado',
-            area: 'administracion',
-            puntoVenta: 'Bogota',
-            tipo: 'discriminacion',
-            asunto: 'Discriminacion por edad en proceso de seleccion',
-            mensaje: 'Durante el proceso de seleccion se evidencio discriminacion...',
-            anonimo: false,
-            archivos: ['correos.pdf'],
-            estado: 'resuelto',
-            fechaCreacion: '2024-01-13T09:15:00Z'
-        }
-    ];
-    
-    console.log('Datos de ejemplo cargados');
-    applyFilters();
-}
+
 
 // Aplicar filtros a los reportes
 function applyFilters() {
