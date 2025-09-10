@@ -463,6 +463,10 @@ select:disabled {
 }
 
 /* Estilos para Header con botón Admin */
+header {
+    position: relative;
+}
+
 .header-content {
     display: flex;
     justify-content: space-between;
@@ -475,7 +479,11 @@ select:disabled {
 }
 
 .admin-btn {
-    background: rgba(255, 255, 255, 0.2);
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(59, 130, 246, 0.9);
     color: white;
     border: 2px solid rgba(255, 255, 255, 0.3);
     padding: 10px 20px;
@@ -485,6 +493,7 @@ select:disabled {
     font-weight: 500;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .admin-btn:hover {
