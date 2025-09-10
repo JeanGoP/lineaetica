@@ -433,7 +433,7 @@ app.get('/api/reports', async (req, res) => {
         
         res.json({
             success: true,
-            data: result.recordset
+            reports: result.recordset
         });
     } catch (error) {
         console.error('Error obteniendo reportes:', error);

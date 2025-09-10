@@ -22,22 +22,23 @@ function initializeDashboard() {
 
 // Verificar si el usuario esta autenticado
 function checkAuthentication() {
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('userData');
+    // Autenticación deshabilitada temporalmente
+    // const token = localStorage.getItem('authToken');
+    // const userData = localStorage.getItem('userData');
     
-    if (!token || !userData) {
-        // Redirigir al login si no hay autenticacion
-        window.location.href = '/index.html';
-        return;
-    }
+    // if (!token || !userData) {
+    //     // Redirigir al login si no hay autenticacion
+    //     window.location.href = '/index.html';
+    //     return;
+    // }
     
-    try {
-        currentUser = JSON.parse(userData);
-        console.log('Usuario autenticado:', currentUser);
-    } catch (error) {
-        console.error('Error al parsear datos del usuario:', error);
-        logout();
-    }
+    // try {
+    //     currentUser = JSON.parse(userData);
+    //     console.log('Usuario autenticado:', currentUser);
+    // } catch (error) {
+    //     console.error('Error al parsear datos del usuario:', error);
+    //     logout();
+    // }
 }
 
 // Configurar todos los event listeners
@@ -121,16 +122,11 @@ async function loadReportsData() {
         const response = await fetch('/api/reports', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                 'Content-Type': 'application/json'
             }
         });
         
         if (!response.ok) {
-            if (response.status === 401) {
-                logout();
-                return;
-            }
             throw new Error(`Error del servidor: ${response.status}`);
         }
         
@@ -140,25 +136,33 @@ async function loadReportsData() {
         // Mapear los datos del servidor al formato esperado por el dashboard
         allReports = rawReports.map(report => ({
             id: report.id,
-            fechaReporte: report.fecha,
+            fechaReporte: report.fecha_creacion,
             fechaIncidente: report.fecha_incidente,
             fechaInicialIncidente: report.fecha_incidente_inicial,
             fechaFinalIncidente: report.fecha_incidente_final,
-            nombre: report.name,
-            email: report.email,
-            telefono: report.phone,
-            empresa: report.company,
+            nombre: report.reportante,
+            email: report.email_reportante,
+            telefono: report.telefono_reportante || '',
+            empresa: report.empresa,
             cargo: report.position,
             relacion: report.situation_relation,
             area: report.area,
-            puntoVenta: report.punto_venta,
-            tipo: report.tipo,
+            puntoVenta: report.puntos_venta,
+            tipo: report.tipo_reporte,
             asunto: report.asunto,
-            mensaje: report.mensaje,
-            anonimo: report.anonymous === 'true' || report.anonymous === true,
-            archivos: report.attachment_urls || [],
+            mensaje: report.descripcion,
+            anonimo: report.es_anonimo === true,
+            archivos: (() => {
+                try {
+                    // Si es un string JSON válido, parsearlo
+                    return JSON.parse(report.archivos_adjuntos || '[]');
+                } catch {
+                    // Si no es JSON válido, tratarlo como un string simple
+                    return report.archivos_adjuntos ? [report.archivos_adjuntos] : [];
+                }
+            })(),
             estado: report.estado || 'pendiente',
-            fechaCreacion: report.created_at
+            fechaCreacion: report.fecha_creacion
         }));
         
         console.log(`Cargados ${allReports.length} reportes desde la base de datos`);

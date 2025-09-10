@@ -1,0 +1,19 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Dashboard</title>
+</head>
+<body>
+    <script>
+        fetch('/api/reports')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Data received:', data);
+                console.log('Number of reports:', data.reports ? data.reports.length : 0);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    </script>
+</body>
+</html>
