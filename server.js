@@ -181,7 +181,11 @@ async function sendReportNotification(reportData) {
                         <div class="label">Punto de Venta:</div>
                         <div class="value">${reportData.puntos_venta || 'No especificado'}</div>
                     </div>
-                    ${!reportData.es_anonimo ? `
+                    <div class="field">
+                        <div class="label">Descripción:</div>
+                        <div class="value">${reportData.descripcion}</div>
+                    </div>
+                    ${reportData.nombre_reportante ? `
                     <div class="field">
                         <div class="label">Reportante:</div>
                         <div class="value">
@@ -277,7 +281,6 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
             descripcion: req.body.descripcion,
             fecha_incidente: fechaIncidente,
             ubicacion: req.body.ubicacion || null,
-            asunto: req.body.asunto || null,
             personas_involucradas: req.body.personas_involucradas || null,
             testigos: req.body.testigos || null,
             acciones_tomadas: req.body.acciones_tomadas || null,
@@ -294,11 +297,11 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
         // Insertar en la base de datos
         const query = `
             INSERT INTO reportes_etica (
-                empresa, tipo_reporte, area, puntos_venta, descripcion, fecha_incidente, ubicacion, asunto,
+                empresa, tipo_reporte, area, puntos_venta, descripcion, fecha_incidente, ubicacion,
                 personas_involucradas, testigos, acciones_tomadas, evidencia_adicional,
                 nombre_reportante, email_reportante, telefono_reportante, es_anonimo, archivos_adjuntos
             ) VALUES (
-                @empresa, @tipo_reporte, @area, @puntos_venta, @descripcion, @fecha_incidente, @ubicacion, @asunto,
+                @empresa, @tipo_reporte, @area, @puntos_venta, @descripcion, @fecha_incidente, @ubicacion,
                 @personas_involucradas, @testigos, @acciones_tomadas, @evidencia_adicional,
                 @nombre_reportante, @email_reportante, @telefono_reportante, @es_anonimo, @archivos_adjuntos
             )
