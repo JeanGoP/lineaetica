@@ -7,6 +7,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { Resend } = require('resend');
 
@@ -132,7 +133,7 @@ async function connectDB() {
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Función para enviar notificación por email
-async function sendReportNotification(reportData) {
+async function sendReportNotification(reportData, attachmentFiles = []) {
     if (!process.env.RESEND_API_KEY || !process.env.NOTIFICATION_EMAIL) {
         console.log('⚠️ Variables de entorno para email no configuradas');
         return;
@@ -165,17 +166,35 @@ async function sendReportNotification(reportData) {
                         <div class="label">Empresa:</div>
                         <div class="value">${reportData.empresa || 'No especificada'}</div>
                     </div>
+                    ${reportData.puntos_venta ? `
+                    <div class="field">
+                        <div class="label">Punto de Venta:</div>
+                        <div class="value">${reportData.puntos_venta}</div>
+                    </div>
+                    ` : ''}
+                    <div class="field">
+                        <div class="label">Relación con la Empresa:</div>
+                        <div class="value">${reportData.position || 'No especificada'}</div>
+                    </div>
+                    <div class="field">
+                        <div class="label">Relación con la Situación:</div>
+                        <div class="value">${reportData.situation_relation || 'No especificada'}</div>
+                    </div>
                     <div class="field">
                         <div class="label">Tipo de Reporte:</div>
                         <div class="value">${reportData.tipo_reporte}</div>
                     </div>
                     <div class="field">
                         <div class="label">Fecha del Incidente:</div>
-                        <div class="value">${reportData.fecha_incidente || 'No especificada'}</div>
+                        <div class="value">${reportData.fecha_incidente || (reportData.fecha_incidente_inicial && reportData.fecha_incidente_final ? `${reportData.fecha_incidente_inicial} - ${reportData.fecha_incidente_final}` : 'No especificada')}</div>
                     </div>
                     <div class="field">
                         <div class="label">Área:</div>
                         <div class="value">${reportData.area}</div>
+                    </div>
+                    <div class="field">
+                        <div class="label">Asunto:</div>
+                        <div class="value">${reportData.asunto}</div>
                     </div>
                     <div class="field">
                         <div class="label">Descripción:</div>
@@ -211,12 +230,36 @@ async function sendReportNotification(reportData) {
         </html>
         `;
 
-        await resend.emails.send({
+        // Preparar archivos adjuntos para el email
+         const emailAttachments = [];
+         if (attachmentFiles && attachmentFiles.length > 0) {
+             for (const file of attachmentFiles) {
+                try {
+                    const filePath = path.join(__dirname, 'uploads', file.filename);
+                    const fileContent = fs.readFileSync(filePath);
+                    emailAttachments.push({
+                        filename: file.originalname,
+                        content: fileContent
+                    });
+                } catch (fileError) {
+                    console.error('⚠️ Error leyendo archivo adjunto:', file.filename, fileError.message);
+                }
+            }
+        }
+
+        const emailOptions = {
             from: process.env.FROM_EMAIL || 'noreply@yourdomain.com',
             to: process.env.NOTIFICATION_EMAIL,
             subject: `🚨 Nuevo Reporte de Línea Ética - ${reportData.tipo_reporte}`,
             html: emailHtml
-        });
+        };
+
+        // Agregar archivos adjuntos si existen
+        if (emailAttachments.length > 0) {
+            emailOptions.attachments = emailAttachments;
+        }
+
+        await resend.emails.send(emailOptions);
 
         console.log('✅ Email de notificación enviado exitosamente');
     } catch (error) {
@@ -273,9 +316,9 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
             name: esAnonimo ? null : req.body.nombre_reportante,
             email: esAnonimo ? null : req.body.email_reportante,
             phone: esAnonimo ? null : req.body.telefono_reportante,
-            company: req.body.empresa || null,
-            position: req.body.position || null,
-            situation_relation: req.body.situation_relation || null,
+            company: req.body.empresa || 'No especificada',
+            position: req.body.position || 'No especificado',
+            situation_relation: req.body.situation_relation || 'No especificado',
             type: req.body.tipo_reporte,
             subject: req.body.asunto || req.body.tipo_reporte,
             message: req.body.descripcion,
@@ -316,7 +359,27 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
 
         // Enviar notificación por email
         try {
-            await sendReportNotification(reportData);
+            // Mapear datos para el email con los nombres correctos
+            const emailData = {
+                empresa: reportData.company,
+                puntos_venta: reportData.puntos_venta,
+                position: reportData.position,
+                situation_relation: reportData.situation_relation,
+                tipo_reporte: reportData.type,
+                area: reportData.area,
+                asunto: reportData.subject,
+                descripcion: reportData.message,
+                fecha_incidente: reportData.incident_date,
+                fecha_incidente_inicial: reportData.incident_date_initial,
+                fecha_incidente_final: reportData.incident_date_end,
+                nombre_reportante: reportData.name,
+                email_reportante: reportData.email,
+                telefono_reportante: reportData.phone,
+                archivos_adjuntos: archivosAdjuntos,
+                es_anonimo: reportData.anonymous
+            };
+            
+            await sendReportNotification(emailData, req.files);
         } catch (emailError) {
             console.error('⚠️ Error enviando email (continuando):', emailError.message);
             // Continuar aunque falle el email
