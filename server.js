@@ -539,6 +539,11 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
     }
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
 // Endpoint para obtener reportes (para dashboard)
 app.get('/api/reports', requireAuth, async (req, res) => {
     try {
