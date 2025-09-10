@@ -268,37 +268,38 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
             fechaIncidente = req.body.fecha_incidente_inicial;
         }
 
-        // Preparar datos para insertar
+        // Preparar datos para insertar en tabla feedback
         const reportData = {
-            empresa: req.body.empresa || null,
-            tipo_reporte: req.body.tipo_reporte,
+            name: esAnonimo ? null : req.body.nombre_reportante,
+            email: esAnonimo ? null : req.body.email_reportante,
+            phone: esAnonimo ? null : req.body.telefono_reportante,
+            company: req.body.empresa || null,
+            position: req.body.position || null,
+            situation_relation: req.body.situation_relation || null,
+            type: req.body.tipo_reporte,
+            subject: req.body.asunto || req.body.tipo_reporte,
+            message: req.body.descripcion,
+            anonymous: esAnonimo,
+            attachment_urls: archivosAdjuntos || null,
             area: req.body.area,
-            descripcion: req.body.descripcion,
-            fecha_incidente: fechaIncidente,
-            ubicacion: req.body.ubicacion || null,
-            personas_involucradas: req.body.personas_involucradas || null,
-            testigos: req.body.testigos || null,
-            acciones_tomadas: req.body.acciones_tomadas || null,
-            evidencia_adicional: req.body.evidencia_adicional || null,
-            nombre_reportante: esAnonimo ? null : req.body.nombre_reportante,
-            email_reportante: esAnonimo ? null : req.body.email_reportante,
-            telefono_reportante: esAnonimo ? null : req.body.telefono_reportante,
-            es_anonimo: esAnonimo,
-            archivos_adjuntos: archivosAdjuntos || null
+            puntos_venta: req.body.puntos_venta || null,
+            incident_date: req.body.fecha_incidente || null,
+            incident_date_initial: req.body.fecha_incidente_inicial || null,
+            incident_date_end: req.body.fecha_incidente_final || null
         };
 
         console.log('💾 Insertando en base de datos...');
         
-        // Insertar en la base de datos
+        // Insertar en la tabla feedback
         const query = `
-            INSERT INTO reportes_etica (
-                empresa, tipo_reporte, area, descripcion, fecha_incidente, ubicacion,
-                personas_involucradas, testigos, acciones_tomadas, evidencia_adicional,
-                nombre_reportante, email_reportante, telefono_reportante, es_anonimo, archivos_adjuntos
+            INSERT INTO feedback (
+                name, email, phone, company, position, situation_relation, type, subject, 
+                message, anonymous, attachment_urls, area, puntos_venta, 
+                incident_date, incident_date_initial, incident_date_end
             ) VALUES (
-                @empresa, @tipo_reporte, @area, @descripcion, @fecha_incidente, @ubicacion,
-                @personas_involucradas, @testigos, @acciones_tomadas, @evidencia_adicional,
-                @nombre_reportante, @email_reportante, @telefono_reportante, @es_anonimo, @archivos_adjuntos
+                @name, @email, @phone, @company, @position, @situation_relation, @type, @subject,
+                @message, @anonymous, @attachment_urls, @area, @puntos_venta,
+                @incident_date, @incident_date_initial, @incident_date_end
             )
         `;
 
@@ -349,20 +350,22 @@ app.get('/api/reports', async (req, res) => {
         const result = await dbPool.request().query(`
             SELECT 
                 id,
-                empresa,
-                tipo_reporte,
+                company as empresa,
+                type as tipo_reporte,
                 area,
-                descripcion,
-                fecha_incidente,
-                ubicacion,
-                CASE WHEN es_anonimo = 1 THEN 'Anónimo' ELSE nombre_reportante END as reportante,
-                CASE WHEN es_anonimo = 1 THEN NULL ELSE email_reportante END as email_reportante,
-                es_anonimo,
-                archivos_adjuntos,
-                fecha_creacion,
-                estado
-            FROM reportes_etica 
-            ORDER BY fecha_creacion DESC
+                subject as asunto,
+                message as descripcion,
+                incident_date as fecha_incidente,
+                CASE WHEN anonymous = 1 THEN 'Anónimo' ELSE name END as reportante,
+                CASE WHEN anonymous = 1 THEN NULL ELSE email END as email_reportante,
+                anonymous as es_anonimo,
+                attachment_urls as archivos_adjuntos,
+                created_at as fecha_creacion,
+                puntos_venta,
+                position,
+                situation_relation
+            FROM feedback 
+            ORDER BY created_at DESC
         `);
         
         res.json({
