@@ -32,23 +32,24 @@ function initializeDashboard() {
 
 // Verificar si el usuario esta autenticado
 function checkAuthentication() {
-    // Autenticación deshabilitada temporalmente
-    // const token = localStorage.getItem('authToken');
-    // const userData = localStorage.getItem('userData');
-    
-    // if (!token || !userData) {
-    //     // Redirigir al login si no hay autenticacion
-    //     window.location.href = '/index.html';
-    //     return;
-    // }
-    
-    // try {
-    //     currentUser = JSON.parse(userData);
-    //     console.log('Usuario autenticado:', currentUser);
-    // } catch (error) {
-    //     console.error('Error al parsear datos del usuario:', error);
-    //     logout();
-    // }
+    fetch('/api/auth/verify', {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.authenticated) {
+            currentUser = data.user;
+            console.log('Usuario autenticado:', currentUser);
+        } else {
+            // Redirigir al login si no hay autenticacion
+            window.location.href = '/index.html';
+        }
+    })
+    .catch(error => {
+        console.error('Error al verificar autenticación:', error);
+        window.location.href = '/index.html';
+    });
 }
 
 // Configurar todos los event listeners
@@ -801,12 +802,23 @@ function showInfo(message) {
 
 // Funcion de logout
 function logout() {
-    // Limpiar datos de autenticacion
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
-    
-    // Redirigir al login
-    window.location.href = 'index.html';
+    fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Sesión cerrada exitosamente');
+        }
+        // Redirigir al login independientemente del resultado
+        window.location.href = 'index.html';
+    })
+    .catch(error => {
+        console.error('Error al cerrar sesión:', error);
+        // Redirigir al login aunque haya error
+        window.location.href = 'index.html';
+    });
 }
 
 // Cerrar modal con tecla Escape

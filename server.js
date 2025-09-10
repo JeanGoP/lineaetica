@@ -10,15 +10,45 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { Resend } = require('resend');
+const bcrypt = require('bcrypt');
+const session = require('express-session');
 
 const app = express();
 const PORT = process.env.PORT || 10000; // Cambiado a 10000 para Render
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Configuración de sesiones
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'etica-line-secret-key-2024',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false, // Cambiar a true en producción con HTTPS
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 24 horas
+    }
+}));
+
 app.use(express.static('public'));
+
+// Middleware de autenticación
+function requireAuth(req, res, next) {
+    if (req.session && req.session.user) {
+        return next();
+    } else {
+        return res.status(401).json({
+            success: false,
+            message: 'Acceso no autorizado. Debe iniciar sesión.'
+        });
+    }
+}
 
 // Configuración de SQL Server
 const config = {
@@ -90,8 +120,9 @@ async function connectDB() {
             isConnected = true;
             console.log('✅ Conectado exitosamente a SQL Server');
             
-            // Verificar si la tabla existe
-            const checkTableQuery = `
+            // Verificar si las tablas existen
+            const checkTablesQuery = `
+                -- Crear tabla reportes_etica si no existe
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='reportes_etica' AND xtype='U')
                 BEGIN
                     CREATE TABLE reportes_etica (
@@ -115,10 +146,28 @@ async function connectDB() {
                         estado NVARCHAR(50) DEFAULT 'Pendiente'
                     )
                 END
+                
+                -- Crear tabla users si no existe
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='users' AND xtype='U')
+                BEGIN
+                    CREATE TABLE users (
+                        id INT IDENTITY(1,1) PRIMARY KEY,
+                        email NVARCHAR(255) UNIQUE NOT NULL,
+                        password_hash NVARCHAR(255) NOT NULL,
+                        nombre NVARCHAR(255),
+                        rol NVARCHAR(50) DEFAULT 'admin',
+                        activo BIT DEFAULT 1,
+                        fecha_creacion DATETIME DEFAULT GETDATE(),
+                        ultimo_acceso DATETIME
+                    )
+                END
             `;
             
-            await pool.request().query(checkTableQuery);
-            console.log('✅ Tabla verificada/creada exitosamente');
+            await pool.request().query(checkTablesQuery);
+            console.log('✅ Tablas verificadas/creadas exitosamente');
+            
+            // Crear usuario administrador por defecto si no existe
+            await createDefaultAdmin();
         }
         return pool;
     } catch (err) {
@@ -126,6 +175,46 @@ async function connectDB() {
         console.error('Detalles del error:', err);
         isConnected = false;
         throw err;
+    }
+}
+
+// Función para crear usuario administrador por defecto
+async function createDefaultAdmin() {
+    try {
+        const defaultEmail = 'mrocha@motosyservicios.com';
+        const defaultPassword = 'NxJkLxhfGCpcg5v';
+        
+        // Verificar si ya existe el usuario
+        const checkUserQuery = 'SELECT id FROM users WHERE email = @email';
+        const checkResult = await pool.request()
+            .input('email', sql.NVarChar, defaultEmail)
+            .query(checkUserQuery);
+        
+        if (checkResult.recordset.length === 0) {
+            // Hash de la contraseña
+            const saltRounds = 12;
+            const passwordHash = await bcrypt.hash(defaultPassword, saltRounds);
+            
+            // Crear usuario administrador
+            const insertUserQuery = `
+                INSERT INTO users (email, password_hash, nombre, rol, activo)
+                VALUES (@email, @passwordHash, @nombre, @rol, @activo)
+            `;
+            
+            await pool.request()
+                .input('email', sql.NVarChar, defaultEmail)
+                .input('passwordHash', sql.NVarChar, passwordHash)
+                .input('nombre', sql.NVarChar, 'Administrador')
+                .input('rol', sql.NVarChar, 'admin')
+                .input('activo', sql.Bit, true)
+                .query(insertUserQuery);
+            
+            console.log('✅ Usuario administrador creado exitosamente');
+        } else {
+            console.log('ℹ️ Usuario administrador ya existe');
+        }
+    } catch (err) {
+        console.error('❌ Error creando usuario administrador:', err.message);
     }
 }
 
@@ -503,6 +592,126 @@ app.get('/api/feedback', async (req, res) => {
             error: error.message
         });
     }
+});
+
+// Endpoint de autenticación
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        // Validar que se proporcionen email y password
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email y contraseña son requeridos'
+            });
+        }
+        
+        const dbPool = await connectDB();
+        
+        // Buscar usuario por email
+        const userQuery = `
+            SELECT id, email, password_hash, nombre, rol, activo
+            FROM users 
+            WHERE email = @email AND activo = 1
+        `;
+        
+        const userResult = await dbPool.request()
+            .input('email', sql.NVarChar, email)
+            .query(userQuery);
+        
+        if (userResult.recordset.length === 0) {
+            return res.status(401).json({
+                success: false,
+                message: 'Credenciales inválidas'
+            });
+        }
+        
+        const user = userResult.recordset[0];
+        
+        // Verificar contraseña
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+        
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: 'Credenciales inválidas'
+            });
+        }
+        
+        // Actualizar último acceso
+        const updateAccessQuery = `
+            UPDATE users 
+            SET ultimo_acceso = GETDATE() 
+            WHERE id = @userId
+        `;
+        
+        await dbPool.request()
+            .input('userId', sql.Int, user.id)
+            .query(updateAccessQuery);
+        
+        // Crear sesión de usuario
+        req.session.user = {
+            id: user.id,
+            email: user.email,
+            nombre: user.nombre,
+            rol: user.rol
+        };
+        
+        // Respuesta exitosa (sin incluir password_hash)
+        res.json({
+            success: true,
+            message: 'Autenticación exitosa',
+            user: {
+                id: user.id,
+                email: user.email,
+                nombre: user.nombre,
+                rol: user.rol
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error en autenticación:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor',
+            error: error.message
+        });
+    }
+});
+
+// Endpoint para verificar sesión
+app.get('/api/auth/verify', (req, res) => {
+    if (req.session && req.session.user) {
+        res.json({
+            success: true,
+            authenticated: true,
+            user: req.session.user
+        });
+    } else {
+        res.json({
+            success: true,
+            authenticated: false
+        });
+    }
+});
+
+// Endpoint para logout
+app.post('/api/auth/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error al cerrar sesión'
+            });
+        }
+        
+        res.clearCookie('connect.sid'); // Nombre por defecto de la cookie de sesión
+        res.json({
+            success: true,
+            message: 'Sesión cerrada exitosamente'
+        });
+    });
 });
 
 // Endpoint para pruebas de conexión

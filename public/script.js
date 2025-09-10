@@ -406,7 +406,7 @@ function initializeAdminFunctionality() {
     });
     
     // Manejar envío del formulario de admin
-    adminForm.addEventListener('submit', function(e) {
+    adminForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const username = usernameField.value.trim();
@@ -420,16 +420,42 @@ function initializeAdminFunctionality() {
             return;
         }
         
-        // Validar credenciales
-        if (username === 'mrocha@motosyservicios.com' && password === 'NxJkLxhfGCpcg5v') {
-            // Establecer sesión de autenticación
-            sessionStorage.setItem('adminAuthenticated', 'true');
-            // Credenciales correctas - redirigir al dashboard
-            closeModal('adminModal');
-            window.location.href = 'dashboard.html';
-        } else {
-            // Credenciales incorrectas
-            showFieldError(usernameField, 'Usuario o contraseña incorrectos');
+        // Enviar credenciales al servidor para autenticación
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    email: username,
+                    password: password
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Autenticación exitosa
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                sessionStorage.setItem('userInfo', JSON.stringify(result.user));
+                
+                // Limpiar errores
+                clearFieldError(usernameField);
+                clearFieldError(passwordField);
+                
+                // Redirigir al dashboard
+                closeModal('adminModal');
+                window.location.href = 'dashboard.html';
+            } else {
+                // Credenciales incorrectas
+                showFieldError(usernameField, result.message || 'Usuario o contraseña incorrectos');
+                showFieldError(passwordField, '');
+            }
+        } catch (error) {
+            console.error('Error en autenticación:', error);
+            showFieldError(usernameField, 'Error de conexión. Intente nuevamente.');
             showFieldError(passwordField, '');
         }
     });
