@@ -300,7 +300,7 @@ function createReportRow(report) {
     if (report.archivos && report.archivos.length > 0) {
         const links = report.archivos.map(archivo => {
             const fileName = archivo.split('/').pop(); // Obtener solo el nombre del archivo
-            return `<a href="/uploads/${archivo}" target="_blank" class="attachment-link" title="Descargar ${fileName}">${fileName}</a>`;
+            return `<a href="/uploads/${fileName}" target="_blank" class="attachment-link" title="Descargar ${fileName}">${fileName}</a>`;
         }).join('<br>');
         adjuntosLinks = `<div class="attachments-links">${links}</div>`;
     }
