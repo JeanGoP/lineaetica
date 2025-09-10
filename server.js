@@ -178,10 +178,6 @@ async function sendReportNotification(reportData) {
                         <div class="value">${reportData.area}</div>
                     </div>
                     <div class="field">
-                        <div class="label">Punto de Venta:</div>
-                        <div class="value">${reportData.puntos_venta || 'No especificado'}</div>
-                    </div>
-                    <div class="field">
                         <div class="label">Descripción:</div>
                         <div class="value">${reportData.descripcion}</div>
                     </div>
@@ -277,7 +273,6 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
             empresa: req.body.empresa || null,
             tipo_reporte: req.body.tipo_reporte,
             area: req.body.area,
-            puntos_venta: req.body.puntos_venta || null,
             descripcion: req.body.descripcion,
             fecha_incidente: fechaIncidente,
             ubicacion: req.body.ubicacion || null,
@@ -297,11 +292,11 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
         // Insertar en la base de datos
         const query = `
             INSERT INTO reportes_etica (
-                empresa, tipo_reporte, area, puntos_venta, descripcion, fecha_incidente, ubicacion,
+                empresa, tipo_reporte, area, descripcion, fecha_incidente, ubicacion,
                 personas_involucradas, testigos, acciones_tomadas, evidencia_adicional,
                 nombre_reportante, email_reportante, telefono_reportante, es_anonimo, archivos_adjuntos
             ) VALUES (
-                @empresa, @tipo_reporte, @area, @puntos_venta, @descripcion, @fecha_incidente, @ubicacion,
+                @empresa, @tipo_reporte, @area, @descripcion, @fecha_incidente, @ubicacion,
                 @personas_involucradas, @testigos, @acciones_tomadas, @evidencia_adicional,
                 @nombre_reportante, @email_reportante, @telefono_reportante, @es_anonimo, @archivos_adjuntos
             )
