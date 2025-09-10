@@ -120,7 +120,8 @@ document.addEventListener('DOMContentLoaded', function() {
             emailField.closest('.form-group'),
             phoneField.closest('.form-group'),
             companyField.closest('.form-group'),
-            positionField.closest('.form-group'),
+            areaField.closest('.form-group'),
+            puntosVentaField.closest('.form-group'),
             incidentDateField.closest('.form-group'), // Fecha del incidente
             document.getElementById('single-date-group'), // Grupo fecha única
             document.getElementById('date-range-group') // Grupo rango fechas
