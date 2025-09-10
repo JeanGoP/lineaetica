@@ -256,7 +256,7 @@ function updateReportsTable() {
     if (filteredReports.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="16" class="no-data">
+                <td colspan="17" class="no-data">
                     No se encontraron reportes con los filtros aplicados
                 </td>
             </tr>
@@ -295,6 +295,16 @@ function createReportRow(report) {
         </button>` : 
         '<span class="no-attachments">Sin archivos</span>';
     
+    // Crear enlaces de descarga para adjuntos
+    let adjuntosLinks = '<span class="no-attachments">Sin archivos</span>';
+    if (report.archivos && report.archivos.length > 0) {
+        const links = report.archivos.map(archivo => {
+            const fileName = archivo.split('/').pop(); // Obtener solo el nombre del archivo
+            return `<a href="/uploads/${archivo}" target="_blank" class="attachment-link" title="Descargar ${fileName}">${fileName}</a>`;
+        }).join('<br>');
+        adjuntosLinks = `<div class="attachments-links">${links}</div>`;
+    }
+    
     row.innerHTML = `
         <td>${fechaReporte}</td>
         <td>${fechaIncidente}</td>
@@ -311,6 +321,7 @@ function createReportRow(report) {
         <td><span class="tipo-badge tipo-${report.tipo}">${tipoFormatted}</span></td>
         <td class="asunto-cell" title="${report.asunto || ''}">${truncateText(report.asunto || '', 50)}</td>
         <td class="mensaje-cell" title="${report.mensaje || ''}">${truncateText(report.mensaje || '', 100)}</td>
+        <td class="attachments-cell">${adjuntosLinks}</td>
         <td>${report.anonimo ? 'Si' : 'No'}</td>
     `;
     

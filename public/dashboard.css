@@ -319,6 +319,46 @@ body {
     max-width: 200px;
 }
 
+.attachments-cell {
+    max-width: 180px;
+    padding: 8px;
+}
+
+.attachments-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.attachment-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    transition: all 0.2s ease;
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.attachment-link:hover {
+    background: #dbeafe;
+    color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.no-attachments {
+    color: #64748b;
+    font-style: italic;
+    font-size: 11px;
+}
+
 .message-text {
     white-space: nowrap;
     overflow: hidden;
