@@ -118,7 +118,7 @@ async function loadReportsData() {
     try {
         showLoading(true);
         
-        const response = await fetch('http://localhost:3000/api/reports', {
+        const response = await fetch('/api/reports', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -577,7 +577,7 @@ function previewFile(fileName, index) {
 
 function downloadFile(fileName, reportId) {
     // Descarga directa usando window.open
-    window.open(`http://localhost:3000/uploads/${fileName}`, '_blank');
+    window.open(`/uploads/${fileName}`, '_blank');
     console.log(`Descargando archivo ${fileName} del reporte ${reportId}`);
 }
 

@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(form);
             formData.append('anonymous', anonymousToggle.checked);
 
-            const response = await fetch('http://localhost:3000/api/submit-report', {
+            const response = await fetch('/api/submit-report', {
                 method: 'POST',
                 body: formData
             });
