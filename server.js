@@ -147,6 +147,50 @@ async function connectDB() {
                     )
                 END
                 
+                -- Crear tabla feedback si no existe
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='feedback' AND xtype='U')
+                BEGIN
+                    CREATE TABLE feedback (
+                        id INT IDENTITY(1,1) PRIMARY KEY,
+                        name NVARCHAR(255),
+                        email NVARCHAR(255),
+                        phone NVARCHAR(50),
+                        company NVARCHAR(255),
+                        position NVARCHAR(255),
+                        situation_relation NVARCHAR(255),
+                        type NVARCHAR(100),
+                        subject NVARCHAR(255),
+                        message NVARCHAR(MAX),
+                        anonymous BIT DEFAULT 0,
+                        attachment_urls NVARCHAR(MAX),
+                        area NVARCHAR(100),
+                        puntos_venta NVARCHAR(255),
+                        incident_date DATE,
+                        incident_date_initial DATE,
+                        incident_date_end DATE,
+                        fecha_creacion DATETIME DEFAULT GETDATE(),
+                        estado NVARCHAR(50) DEFAULT 'Pendiente'
+                    )
+                END
+                ELSE
+                BEGIN
+                    -- Agregar columnas si no existen
+                    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'feedback' AND COLUMN_NAME = 'incident_date_initial')
+                    BEGIN
+                        ALTER TABLE feedback ADD incident_date_initial DATE
+                    END
+                    
+                    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'feedback' AND COLUMN_NAME = 'incident_date_end')
+                    BEGIN
+                        ALTER TABLE feedback ADD incident_date_end DATE
+                    END
+                    
+                    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'feedback' AND COLUMN_NAME = 'fecha_creacion')
+                    BEGIN
+                        ALTER TABLE feedback ADD fecha_creacion DATETIME DEFAULT GETDATE()
+                    END
+                END
+                
                 -- Crear tabla users si no existe
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='users' AND xtype='U')
                 BEGIN
@@ -496,7 +540,7 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
 });
 
 // Endpoint para obtener reportes (para dashboard)
-app.get('/api/reports', async (req, res) => {
+app.get('/api/reports', requireAuth, async (req, res) => {
     try {
         const dbPool = await connectDB();
         const result = await dbPool.request().query(`
@@ -508,16 +552,18 @@ app.get('/api/reports', async (req, res) => {
                 subject as asunto,
                 message as descripcion,
                 incident_date as fecha_incidente,
+                incident_date_initial as fecha_incidente_inicial,
+                incident_date_end as fecha_incidente_final,
                 CASE WHEN anonymous = 1 THEN 'Anónimo' ELSE name END as reportante,
                 CASE WHEN anonymous = 1 THEN NULL ELSE email END as email_reportante,
                 anonymous as es_anonimo,
                 attachment_urls as archivos_adjuntos,
-                created_at as fecha_creacion,
+                fecha_creacion,
                 puntos_venta,
                 position,
                 situation_relation
             FROM feedback 
-            ORDER BY created_at DESC
+            ORDER BY fecha_creacion DESC
         `);
         
         res.json({
