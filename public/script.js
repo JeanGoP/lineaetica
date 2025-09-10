@@ -227,7 +227,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData
             });
 
-            const result = await response.json();
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+            
+            let result;
+            try {
+                result = await response.json();
+                console.log('Response data:', result);
+            } catch (jsonError) {
+                console.error('Error parsing JSON:', jsonError);
+                hideModal('loadingModal');
+                showError('Error de formato en la respuesta del servidor');
+                return;
+            }
 
             hideModal('loadingModal');
 
@@ -238,6 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleAnonymousMode(false);
                 anonymousToggle.checked = false;
             } else {
+                console.error('Server error:', result);
                 showError(result.message || 'Error al enviar el reporte');
             }
         } catch (error) {

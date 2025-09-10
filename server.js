@@ -316,7 +316,12 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
         console.log('✅ Reporte guardado exitosamente');
 
         // Enviar notificación por email
-        await sendReportNotification(reportData);
+        try {
+            await sendReportNotification(reportData);
+        } catch (emailError) {
+            console.error('⚠️ Error enviando email (continuando):', emailError.message);
+            // Continuar aunque falle el email
+        }
 
         res.json({
             success: true,
