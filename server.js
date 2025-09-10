@@ -73,36 +73,53 @@ let isConnected = false;
 
 async function connectDB() {
     try {
-        console.log('Intentando conectar a SQL Server...');
-        console.log('Servidor:', config.server);
-        console.log('Base de datos:', config.database);
-        console.log('Usuario:', config.user);
+        console.log('=== INICIANDO CONEXIÓN A SQL SERVER ===');
+        console.log('🔧 Configuración de conexión:');
+        console.log('  - Servidor:', config.server);
+        console.log('  - Puerto:', config.port);
+        console.log('  - Base de datos:', config.database);
+        console.log('  - Usuario:', config.user);
+        console.log('  - Entorno:', process.env.NODE_ENV || 'development');
+        console.log('  - Variables de entorno disponibles:');
+        console.log('    * DB_SERVER:', process.env.DB_SERVER ? '✅ Configurada' : '❌ No configurada');
+        console.log('    * DB_PORT:', process.env.DB_PORT ? '✅ Configurada' : '❌ No configurada');
+        console.log('    * DB_USER:', process.env.DB_USER ? '✅ Configurada' : '❌ No configurada');
+        console.log('    * DB_PASSWORD:', process.env.DB_PASSWORD ? '✅ Configurada' : '❌ No configurada');
+        console.log('    * DB_DATABASE:', process.env.DB_DATABASE ? '✅ Configurada' : '❌ No configurada');
         
+        console.log('🔄 Intentando establecer conexión...');
         pool = await sql.connect(config);
         isConnected = true;
-        console.log('Conectado exitosamente a SQL Server');
+        console.log('✅ Conectado exitosamente a SQL Server');
         
         // Manejar eventos de conexión
         pool.on('error', err => {
-            console.error('Error en la conexión de SQL Server:', err);
+            console.error('❌ Error en la conexión de SQL Server:', err);
             isConnected = false;
         });
         
         // Probar la conexión con una consulta simple
-        const testResult = await pool.request().query('SELECT 1 as test');
-        console.log('Prueba de consulta exitosa:', testResult.recordset);
+        console.log('🧪 Ejecutando prueba de consulta...');
+        const testResult = await pool.request().query('SELECT 1 as test, GETDATE() as current_time, DB_NAME() as database_name');
+        console.log('✅ Prueba de consulta exitosa:', testResult.recordset[0]);
         
     } catch (err) {
-        console.error('Error conectando a la base de datos:');
-        console.error('Código de error:', err.code);
-        console.error('Mensaje:', err.message);
-        console.error('Detalles completos:', err);
+        console.error('❌ ERROR CONECTANDO A LA BASE DE DATOS:');
+        console.error('  - Código de error:', err.code);
+        console.error('  - Mensaje:', err.message);
+        console.error('  - Número de error:', err.number);
+        console.error('  - Estado:', err.state);
+        console.error('  - Clase:', err.class);
+        console.error('  - Servidor:', err.server);
+        console.error('  - Procedimiento:', err.procName);
+        console.error('  - Línea:', err.lineNumber);
+        console.error('  - Detalles completos:', JSON.stringify(err, null, 2));
         
         isConnected = false;
         
-        // Reintentar conexión después de 10 segundos (aumenté el tiempo)
-        console.log('🔄 Reintentando conexión en 10 segundos...');
-        setTimeout(connectDB, 10000);
+        // Reintentar conexión después de 15 segundos
+        console.log('🔄 Reintentando conexión en 15 segundos...');
+        setTimeout(connectDB, 15000);
     }
 }
 
@@ -246,10 +263,25 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
 // Ruta para obtener todos los reportes
 app.get('/api/reports', async (req, res) => {
     try {
+        console.log('📊 Solicitud de reportes recibida');
+        console.log('🔍 Estado de conexión:', isConnected ? '✅ Conectado' : '❌ Desconectado');
+        
         if (!isConnected) {
+            console.log('🔄 Conexión no disponible, intentando reconectar...');
             await connectDB();
+            
+            // Verificar si la reconexión fue exitosa
+            if (!isConnected) {
+                console.error('❌ No se pudo establecer conexión después del reintento');
+                return res.status(500).json({
+                    success: false,
+                    message: 'No se puede conectar a la base de datos. Servicio temporalmente no disponible.',
+                    error_code: 'DB_CONNECTION_FAILED'
+                });
+            }
         }
 
+        console.log('🔍 Ejecutando consulta de reportes...');
         const result = await pool.request().query(`
             SELECT 
                 id,
@@ -275,7 +307,7 @@ app.get('/api/reports', async (req, res) => {
             ORDER BY created_at DESC
         `);
         
-        console.log('Datos obtenidos de la base de datos:', result.recordset.length, 'registros');
+        console.log('✅ Consulta exitosa - Registros obtenidos:', result.recordset.length);
 
         // Procesar los datos para el formato esperado
         const processedData = result.recordset.map(record => {
@@ -285,7 +317,7 @@ app.get('/api/reports', async (req, res) => {
                     attachmentUrls = JSON.parse(record.attachment_urls);
                 }
             } catch (e) {
-                console.error('Error parsing attachment_urls:', e);
+                console.error('⚠️ Error parsing attachment_urls:', e);
             }
 
             return {
@@ -296,16 +328,27 @@ app.get('/api/reports', async (req, res) => {
             };
         });
 
+        console.log('📤 Enviando respuesta con', processedData.length, 'reportes procesados');
         res.json({
             success: true,
             reports: processedData
         });
 
     } catch (error) {
-        console.error('Error obteniendo reportes:', error);
+        console.error('❌ ERROR OBTENIENDO REPORTES:');
+        console.error('  - Mensaje:', error.message);
+        console.error('  - Código:', error.code);
+        console.error('  - Número:', error.number);
+        console.error('  - Estado de conexión:', isConnected);
+        console.error('  - Pool disponible:', !!pool);
+        console.error('  - Detalles completos:', JSON.stringify(error, null, 2));
+        
         res.status(500).json({
             success: false,
-            message: 'Error obteniendo reportes de la base de datos'
+            message: 'Error obteniendo reportes de la base de datos',
+            error_code: error.code || 'UNKNOWN_ERROR',
+            connection_status: isConnected,
+            timestamp: new Date().toISOString()
         });
     }
 });
