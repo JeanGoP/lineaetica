@@ -262,17 +262,20 @@ app.post('/api/submit-report', upload.array('attachments', 5), async (req, res) 
 
 // Ruta para obtener todos los reportes
 app.get('/api/reports', async (req, res) => {
+    console.log('📊 [REPORTS] Solicitud recibida para /api/reports');
+    console.log('🔍 [REPORTS] Estado de conexión actual:', isConnected);
+    console.log('🔍 [REPORTS] Pool existe:', !!pool);
+    
     try {
-        console.log('📊 Solicitud de reportes recibida');
-        console.log('🔍 Estado de conexión:', isConnected ? '✅ Conectado' : '❌ Desconectado');
-        
-        if (!isConnected) {
-            console.log('🔄 Conexión no disponible, intentando reconectar...');
+        // Verificar si hay conexión activa
+        if (!pool || !isConnected) {
+            console.log('⚠️ [REPORTS] No hay conexión activa, intentando reconectar...');
             await connectDB();
+            console.log('🔄 [REPORTS] Reconexión completada, estado:', isConnected);
             
             // Verificar si la reconexión fue exitosa
             if (!isConnected) {
-                console.error('❌ No se pudo establecer conexión después del reintento');
+                console.error('❌ [REPORTS] No se pudo establecer conexión después del reintento');
                 return res.status(500).json({
                     success: false,
                     message: 'No se puede conectar a la base de datos. Servicio temporalmente no disponible.',
@@ -281,7 +284,9 @@ app.get('/api/reports', async (req, res) => {
             }
         }
 
-        console.log('🔍 Ejecutando consulta de reportes...');
+        console.log('🔄 [REPORTS] Iniciando consulta de reportes...');
+        console.log('🔄 [REPORTS] Pool conectado:', pool.connected);
+        
         const result = await pool.request().query(`
             SELECT 
                 id,
@@ -307,17 +312,19 @@ app.get('/api/reports', async (req, res) => {
             ORDER BY created_at DESC
         `);
         
-        console.log('✅ Consulta exitosa - Registros obtenidos:', result.recordset.length);
+        console.log('✅ [REPORTS] Consulta ejecutada exitosamente');
+        console.log('📊 [REPORTS] Número de registros obtenidos:', result.recordset.length);
 
         // Procesar los datos para el formato esperado
-        const processedData = result.recordset.map(record => {
+        const processedData = result.recordset.map((record, index) => {
+            console.log(`🔄 [REPORTS] Procesando reporte ${index + 1}/${result.recordset.length}`);
             let attachmentUrls = [];
             try {
                 if (record.attachment_urls) {
                     attachmentUrls = JSON.parse(record.attachment_urls);
                 }
             } catch (e) {
-                console.error('⚠️ Error parsing attachment_urls:', e);
+                console.error(`❌ [REPORTS] Error parsing attachment_urls del reporte ${record.id}:`, e);
             }
 
             return {
@@ -328,25 +335,36 @@ app.get('/api/reports', async (req, res) => {
             };
         });
 
-        console.log('📤 Enviando respuesta con', processedData.length, 'reportes procesados');
+        console.log('📋 [REPORTS] Procesamiento completado. Enviando', processedData.length, 'reportes al cliente');
         res.json({
             success: true,
             reports: processedData
         });
 
     } catch (error) {
-        console.error('❌ ERROR OBTENIENDO REPORTES:');
+        console.error('❌ [REPORTS] ERROR CRÍTICO en /api/reports:');
         console.error('  - Mensaje:', error.message);
         console.error('  - Código:', error.code);
         console.error('  - Número:', error.number);
+        console.error('  - Clase:', error.class);
+        console.error('  - Estado:', error.state);
+        console.error('  - Línea:', error.lineNumber);
+        console.error('  - Procedimiento:', error.procName);
+        console.error('  - Servidor:', error.serverName);
         console.error('  - Estado de conexión:', isConnected);
         console.error('  - Pool disponible:', !!pool);
-        console.error('  - Detalles completos:', JSON.stringify(error, null, 2));
+        console.error('  - Stack completo:', error.stack);
         
         res.status(500).json({
             success: false,
             message: 'Error obteniendo reportes de la base de datos',
-            error_code: error.code || 'UNKNOWN_ERROR',
+            error: error.message,
+            details: {
+                code: error.code,
+                number: error.number,
+                state: error.state,
+                class: error.class
+            },
             connection_status: isConnected,
             timestamp: new Date().toISOString()
         });
@@ -467,21 +485,153 @@ app.get('/api/test-connection', async (req, res) => {
     }
 });
 
+// Endpoint de diagnóstico específico
+app.get('/api/debug-connection', async (req, res) => {
+    const diagnostics = {
+        timestamp: new Date().toISOString(),
+        steps: [],
+        success: false,
+        error: null
+    };
+    
+    try {
+        // Paso 1: Verificar variables de entorno
+        diagnostics.steps.push({
+            step: 1,
+            name: 'Variables de entorno',
+            status: 'checking',
+            details: {
+                DB_SERVER: !!process.env.DB_SERVER,
+                DB_PORT: !!process.env.DB_PORT,
+                DB_USER: !!process.env.DB_USER,
+                DB_PASSWORD: !!process.env.DB_PASSWORD,
+                DB_DATABASE: !!process.env.DB_DATABASE
+            }
+        });
+        
+        // Paso 2: Verificar estado del pool
+        diagnostics.steps.push({
+            step: 2,
+            name: 'Estado del pool',
+            status: 'checking',
+            details: {
+                poolExists: !!pool,
+                isConnected: isConnected,
+                poolConnected: pool ? pool.connected : false
+            }
+        });
+        
+        // Paso 3: Intentar conexión si es necesario
+        if (!pool || !isConnected) {
+            diagnostics.steps.push({
+                step: 3,
+                name: 'Intentando conexión',
+                status: 'running'
+            });
+            
+            await connectDB();
+            
+            diagnostics.steps[2].status = isConnected ? 'success' : 'failed';
+            diagnostics.steps[2].details = {
+                connectionEstablished: isConnected,
+                poolConnected: pool ? pool.connected : false
+            };
+        }
+        
+        // Paso 4: Probar consulta simple
+        diagnostics.steps.push({
+            step: 4,
+            name: 'Consulta de prueba',
+            status: 'running'
+        });
+        
+        const testResult = await pool.request().query('SELECT 1 as test, GETDATE() as fecha_actual, DB_NAME() as nombre_bd');
+        
+        diagnostics.steps[diagnostics.steps.length - 1].status = 'success';
+        diagnostics.steps[diagnostics.steps.length - 1].details = testResult.recordset[0];
+        
+        // Paso 5: Verificar tabla reportes
+        diagnostics.steps.push({
+            step: 5,
+            name: 'Verificar tabla reportes',
+            status: 'running'
+        });
+        
+        const tableCheck = await pool.request().query("SELECT COUNT(*) as count FROM reportes");
+        
+        diagnostics.steps[diagnostics.steps.length - 1].status = 'success';
+        diagnostics.steps[diagnostics.steps.length - 1].details = {
+            tableExists: true,
+            recordCount: tableCheck.recordset[0].count
+        };
+        
+        // Paso 6: Probar consulta completa de reportes
+        diagnostics.steps.push({
+            step: 6,
+            name: 'Consulta completa de reportes',
+            status: 'running'
+        });
+        
+        const reportsResult = await pool.request().query(`
+            SELECT TOP 1
+                id,
+                nombre_completo,
+                email,
+                telefono,
+                tipo_reporte,
+                descripcion,
+                fecha_creacion,
+                adjuntos
+            FROM reportes 
+            ORDER BY fecha_creacion DESC
+        `);
+        
+        diagnostics.steps[diagnostics.steps.length - 1].status = 'success';
+        diagnostics.steps[diagnostics.steps.length - 1].details = {
+            queryExecuted: true,
+            sampleRecord: reportsResult.recordset[0] || null,
+            recordsFound: reportsResult.recordset.length
+        };
+        
+        diagnostics.success = true;
+        
+    } catch (error) {
+        diagnostics.error = {
+            message: error.message,
+            code: error.code,
+            number: error.number,
+            state: error.state,
+            class: error.class,
+            lineNumber: error.lineNumber,
+            procName: error.procName,
+            serverName: error.serverName
+        };
+        
+        // Marcar el último paso como fallido
+        if (diagnostics.steps.length > 0) {
+            diagnostics.steps[diagnostics.steps.length - 1].status = 'failed';
+            diagnostics.steps[diagnostics.steps.length - 1].error = diagnostics.error;
+        }
+    }
+    
+    res.json(diagnostics);
+});
+
 // Endpoint temporal para verificar estructura de tabla
 app.get('/api/check-table-structure', async (req, res) => {
     try {
         if (!pool || !isConnected) {
-            return res.status(500).json({
-                success: false,
-                message: 'No hay conexión activa a la base de datos'
-            });
+            await connectDB();
         }
-
-        // Verificar columnas de la tabla feedback
+        
         const result = await pool.request().query(`
-            SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE
+            SELECT 
+                COLUMN_NAME,
+                DATA_TYPE,
+                IS_NULLABLE,
+                COLUMN_DEFAULT
             FROM INFORMATION_SCHEMA.COLUMNS 
-            WHERE TABLE_NAME = 'feedback'
+            WHERE TABLE_NAME = 'reportes'
             ORDER BY ORDINAL_POSITION
         `);
         
@@ -490,12 +640,12 @@ app.get('/api/check-table-structure', async (req, res) => {
             columns: result.recordset
         });
         
-    } catch (err) {
-        console.error('Error al verificar estructura:', err);
+    } catch (error) {
+        console.error('Error checking table structure:', error);
         res.status(500).json({
             success: false,
-            message: 'Error al verificar estructura de tabla',
-            error: err.message
+            message: 'Error verificando estructura de tabla',
+            error: error.message
         });
     }
 });
