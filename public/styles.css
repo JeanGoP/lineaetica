@@ -809,7 +809,44 @@ select:disabled {
     box-shadow: var(--shadow-lg);
 }
 
-/* Responsive Design Mejorado */
+/* PDF Authorization Label Styles */
+.pdf-authorization-label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+    color: var(--surface-white);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-sm);
+    font-weight: 500;
+    text-align: center;
+    user-select: none;
+    border: 2px solid transparent;
+}
+
+.pdf-authorization-label:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-blue));
+    border-color: var(--accent-gold);
+}
+
+.pdf-authorization-label:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.pdf-instruction {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* Responsive Design */Mejorado */
 @media (max-width: 768px) {
     body {
         padding: var(--spacing-md);

@@ -295,7 +295,15 @@
                 <div class="form-group checkbox-group">
                     <label class="checkbox-label small-text">
                         <input type="checkbox" id="dataConsent" required>
-                        * Autorizo el tratamiento de mis datos personales de acuerdo con la <a href="tratamientodedatos.pdf" target="_blank" rel="noopener noreferrer">Política de Tratamiento de Datos Personales</a>.
+                        * Autorizo el tratamiento de mis datos personales. <a href="tratamientodedatos.pdf" target="_blank" rel="noopener noreferrer"></a>
+                    </label>
+                </div>
+
+                <!-- Enlace de PDF de Autorización por Empresa -->
+                <div class="form-group" id="pdfAuthorizationContainer" style="display: none;">
+                    <label id="pdfAuthorizationLabel" class="pdf-authorization-label">
+                        📄 Ver utorización de Tratamiento de Datos - <span id="companyName"></span>
+                        <small class="pdf-instruction">Haz clic aquí para abrir el documento</small>
                     </label>
                 </div>
 

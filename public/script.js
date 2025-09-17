@@ -62,12 +62,71 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Mapeo de empresas a archivos PDF de autorización
+    const empresaPDFMap = {
+        'Centromotos': 'AUTORIZACION - CENTROMOTOS.PDF',
+        'Distrimotos': 'AUTORIZACION - DISTRIMOTOS.PDF',
+        'Credimotos': 'AUTORIZACION - CREDIMOTOS.PDF',
+        'Credimovil': 'AUTORIZACION - Credimovil.PDF',
+        'Motomovil': 'AUTORIZACION - MOTOMOVIL.PDF',
+        'Sabanamotos': 'AUTORIZACION - SABANAMOTOS.PDF',
+        'Motocredito': 'AUTORIZACION - MOTOCREDITO.PDF',
+        'Motos Del Aburra': 'AUTORIZACION - MOTOS DEL ABURRA.PDF',
+        'Fintotal': 'AUTORIZACION - FINTOTAL.PDF',
+        'Motoracing': 'AUTORIZACION - MOTORACING.PDF',
+        'Motos Del Darien': 'AUTORIZACION - MOTOS DEL DARIEN.PDF'
+    };
+
+    // Función para mostrar PDF de autorización según la empresa
+    function showCompanyAuthorizationPDF(empresa) {
+        const pdfContainer = document.getElementById('pdfAuthorizationContainer');
+        const pdfLabel = document.getElementById('pdfAuthorizationLabel');
+        const companyNameSpan = document.getElementById('companyName');
+        
+        if (empresa && empresaPDFMap[empresa]) {
+            const pdfFileName = empresaPDFMap[empresa];
+            const pdfPath = `./${pdfFileName}`;
+            
+            // Mostrar el contenedor del PDF
+            pdfContainer.style.display = 'block';
+            
+            // Actualizar el nombre de la empresa en el label
+            companyNameSpan.textContent = empresa;
+            
+            // Configurar el evento de clic para abrir el PDF
+            pdfLabel.onclick = function() {
+                window.open(pdfPath, '_blank');
+            };
+            
+            // Agregar cursor pointer para indicar que es clickeable
+            pdfLabel.style.cursor = 'pointer';
+            
+            console.log(`PDF de autorización configurado para ${empresa}: ${pdfFileName}`);
+        } else {
+            // Ocultar el contenedor si no hay empresa seleccionada o no existe PDF
+            pdfContainer.style.display = 'none';
+            
+            // Limpiar el evento de clic
+            if (pdfLabel) {
+                pdfLabel.onclick = null;
+                pdfLabel.style.cursor = 'default';
+            }
+            
+            if (empresa) {
+                console.log(`No se encontró PDF de autorización para la empresa: ${empresa}`);
+            }
+        }
+    }
+
     // Función para manejar la activación del campo Punto de Venta
     function handlePuntosVentaActivation() {
         const empresaValue = companyField.value;
         const areaValue = areaField.value;
         
         console.log('Empresa:', empresaValue, 'Área:', areaValue);
+        
+        // Mostrar PDF de autorización según la empresa seleccionada
+        showCompanyAuthorizationPDF(empresaValue);
         
         const empresasConPuntosVenta = [
             'Centromotos', 'Distrimotos', 'Credimotos', 'Credimovil', 'Motomovil', 
@@ -124,7 +183,8 @@ document.addEventListener('DOMContentLoaded', function() {
             puntosVentaField.closest('.form-group'),
             incidentDateField.closest('.form-group'), // Fecha del incidente
             document.getElementById('single-date-group'), // Grupo fecha única
-            document.getElementById('date-range-group') // Grupo rango fechas
+            document.getElementById('date-range-group'), // Grupo rango fechas
+            document.getElementById('pdfAuthorizationContainer') // Contenedor PDF
         ];
     
         if (isAnonymous) {
@@ -137,6 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     field.classList.add('hidden');
                 }
             });
+
+            // Ocultar específicamente el PDF de autorización
+            showCompanyAuthorizationPDF('');
     
             // Remover atributos required de campos ocultos
             nameField.removeAttribute('required');
