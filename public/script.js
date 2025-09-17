@@ -64,17 +64,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Mapeo de empresas a archivos PDF de autorización
     const empresaPDFMap = {
-        'Centromotos': 'AUTORIZACION - CENTROMOTOS.PDF',
-        'Distrimotos': 'AUTORIZACION - DISTRIMOTOS.PDF',
-        'Credimotos': 'AUTORIZACION - CREDIMOTOS.PDF',
-        'Credimovil': 'AUTORIZACION - Credimovil.PDF',
-        'Motomovil': 'AUTORIZACION - MOTOMOVIL.PDF',
-        'Sabanamotos': 'AUTORIZACION - SABANAMOTOS.PDF',
-        'Motocredito': 'AUTORIZACION - MOTOCREDITO.PDF',
-        'Motos Del Aburra': 'AUTORIZACION - MOTOS DEL ABURRA.PDF',
-        'Fintotal': 'AUTORIZACION - FINTOTAL.PDF',
-        'Motoracing': 'AUTORIZACION - MOTORACING.PDF',
-        'Motos Del Darien': 'AUTORIZACION - MOTOS DEL DARIEN.PDF'
+        'Centromotos': 'AUTORIZACION-CENTROMOTOS.pdf',
+        'Distrimotos': 'AUTORIZACION-Distrimotos.pdf',
+        'Credimotos': 'AUTORIZACION-CREDIMOTOS.pdf',
+        'Credimovil': 'AUTORIZACION-Credimovil.pdf',
+        'Motomovil': 'AUTORIZACION-Motomovil.pdf',
+        'Sabanamotos': 'AUTORIZACION-Sabanamotos.pdf',
+        'Motocredito': 'AUTORIZACION-Motocredito.pdf',
+        'Motos Del Aburra': 'AUTORIZACION-MotosDelAburra.pdf',
+        'Fintotal': 'AUTORIZACION-FINTOTAL.pdf',
+        'Motoracing': 'AUTORIZACION-Motoracing.pdf',
+        'Motos Del Darien': 'AUTORIZACION-MotosDelDarien.pdf'
     };
 
     // Función para mostrar PDF de autorización según la empresa
